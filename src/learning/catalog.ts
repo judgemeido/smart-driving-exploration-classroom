@@ -1,18 +1,29 @@
 import type { ActivityDefinition, SectionId } from './types';
 export const sections: { id: SectionId; number: string; title: string; short: string }[] = [
+  { id: 'battery', number: '00', title: '电池怎样发展', short: '储能与选择' },
   { id: 'history', number: '01', title: '汽车如何进化', short: '发展与能量' },
   { id: 'explore', number: '02', title: '打开汽车看系统', short: '结构与协作' },
   { id: 'lidar', number: '03', title: '让汽车感知世界', short: '观察与测量' },
 ];
 export const activities: ActivityDefinition[] = [
   {
+    id: 'B1',
+    section: 'battery',
+    title: '从一块电池开始',
+    question: '电池越来越多，为什么没有一种适合所有用途？',
+    instruction: '切换电池与充放电方向，再打开结构。',
+    teacher: '从铅酸到镍氢与锂离子，材料和用途逐渐丰富。今天磷酸铁锂与三元锂仍在并行使用，重量、成本、寿命和温度管理都需要权衡。先听老师讲解，再比较结构和能量流向。',
+    predictionPrompt: '新电池出现后，早期的电池就都没有用途了吗？',
+    transfer: '你的电池和充放电观察，支持哪种发现？',
+  },
+  {
     id: 'H1',
     section: 'history',
-    title: '汽车进化档案',
+    title: '四辆车，四种出行需要',
     question: '汽车的变化，解决了什么问题？',
-    instruction: '读一条史料，调整时间顺序，再用证据解释一次变化。',
-    teacher: '技术不是突然出现的。研究、示范和走入日常生活，分别需要不同证据。先听老师讲解，再打开档案核对。',
-    predictionPrompt: '科研探索和道路示范，谁先出现？',
+    instruction: '选两辆车，打开车身或演示动力。',
+    teacher: '燃油车和电动车在早期就已经出现。不同年代的车辆回应不同需要，混合动力与纯电动也会并行发展。这些模型展示时代特征，不是具体车型的原厂结构。',
+    predictionPrompt: '早期电动车和燃油车，是否曾经同时存在？',
     transfer: '哪条发现得到这些史料的支持？',
   },
   {
@@ -22,7 +33,7 @@ export const activities: ActivityDefinition[] = [
     question: '电机在转，车轮就一定会转吗？',
     instruction: '保持其他条件不变，只断开供能或传动，比较两次结果。',
     teacher:
-      '电池提供能量，电机把电能转成机械运动，传动机构将运动传给车轮。这里是没有惯性的功能台架，不是整车制动仿真。',
+      '先认出整车，再观察能源如何到达车轮。电池提供能量，电机转成机械运动，传动把运动传给车轮。断路操作采用忽略惯性的教学模型，不能用于推断真实行驶中的停车距离。',
     predictionPrompt: '断开传动后，电机和车轮会怎样？',
     transfer: '你记录的电机与车轮状态，支持哪条发现？',
   },

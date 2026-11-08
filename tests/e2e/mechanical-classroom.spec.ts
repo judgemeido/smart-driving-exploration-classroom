@@ -76,15 +76,17 @@ test('mechanical stage keeps a usable model viewport on classroom screens', asyn
   }
 });
 
-test('history source selection opens its corresponding mechanism and keyboard inspection keeps focus', async ({
+test('vehicle selection changes available parts and keyboard inspection keeps focus', async ({
   page,
 }) => {
   await page.goto('/#history/H1');
   await page.getByRole('button', { name: '操作', exact: true }).click();
-  await page
-    .getByRole('combobox', { name: '查看档案与位置', exact: true })
-    .selectOption('history-event-2015');
-  await expect(page.locator('.mechanical-part-title')).toContainText('环境感知');
+  await page.locator('[data-era="pioneer"]').click();
+  await expect(page.locator('[data-inspect-part="engine"]')).toBeVisible();
+  await expect(page.locator('[data-inspect-part="motor"]')).toHaveCount(0);
+  await page.locator('[data-era="modern-ev"]').click();
+  await expect(page.locator('[data-inspect-part="engine"]')).toHaveCount(0);
+  await expect(page.locator('[data-inspect-part="sensor"]')).toBeVisible();
   const motor = page.locator('[data-inspect-part="motor"]');
   await motor.focus();
   await page.keyboard.press('Enter');

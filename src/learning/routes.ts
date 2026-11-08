@@ -6,7 +6,7 @@ export function parseRoute(hash: string): Route {
   if (root === 'knowledge') return child === 'Q2' ? 'Q2' : 'Q1';
   if (root === 'traffic' || root === 'report') return root;
   const first = activities.find((a) => a.section === root);
-  return activities.find((a) => a.id === child && a.section === root)?.id ?? first?.id ?? 'H1';
+  return activities.find((a) => a.id === child && a.section === root)?.id ?? first?.id ?? 'B1';
 }
 export function routeHash(id: Route): string {
   if (id === 'Q1' || id === 'Q2') return `#knowledge/${id}`;

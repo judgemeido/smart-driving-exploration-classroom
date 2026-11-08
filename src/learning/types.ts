@@ -1,8 +1,11 @@
-export type ActivityId = 'H1' | 'H2' | 'E1' | 'E2' | 'S1' | 'S2' | 'S3';
-export type SectionId = 'history' | 'explore' | 'lidar';
+export type ActivityId = 'B1' | 'H1' | 'H2' | 'E1' | 'E2' | 'S1' | 'S2' | 'S3';
+export type SectionId = 'battery' | 'history' | 'explore' | 'lidar';
 /** Teaching geometry; dimensions are illustrative unless explicitly given in metres. */
 export interface SceneSnapshot {
-  kind: 'vehicle' | 'sensor';
+  kind: 'vehicle' | 'sensor' | 'battery' | 'evolution';
+  batteryType?: 'lead-acid' | 'nimh' | 'lfp' | 'nmc';
+  batteryFlow?: 'rest' | 'charge' | 'discharge';
+  vehicleEra?: 'pioneer' | 'early-electric' | 'hybrid' | 'modern-ev';
   power?: boolean;
   transmission?: boolean;
   running?: boolean;
@@ -43,6 +46,8 @@ export interface Experiment {
   getDraft(): unknown;
   observe(): Observation;
   selectPart?(part: string): void;
+  setPresentation?(view: { exploded: boolean; cutaway: boolean }): void;
+  demonstrate?(): void;
   dispose(): void;
 }
 export type ExperimentFactory = (host: HTMLElement, context: ExperimentContext) => Experiment;

@@ -5,6 +5,7 @@ import { parseRoute, routeHash, type Route } from './routes';
 import { appendRun, emptyRecord, loadPortfolio, savePortfolio, validatePortfolio } from './records';
 import { createStage } from './stage';
 import { createHistoryExperiment } from './activities/history';
+import { createBatteryExperiment } from './activities/battery';
 import { createStructureExperiment } from './activities/structure';
 import { createSensorExperiment } from './activities/sensor';
 import { mountKnowledge } from './knowledge';
@@ -25,7 +26,7 @@ const safe = (text: string) =>
     (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]!,
   );
 
-root.innerHTML = `<div class="learning-app"><a class="skip-link" href="#lesson-title">跳到当前实验</a><header class="lab-header"><a href="#history/H1" class="lab-brand">${mark}<span>智驾探索课堂</span></a><nav aria-label="学习章节">${sections.map((s) => `<a data-section="${s.id}" href="#${s.id}"><span>${s.number}</span>${s.title}</a>`).join('')}<a href="${base}legacy.html#traffic"><span>04</span>安全上路</a></nav><div class="lab-header-links"><a class="museum-link" href="${base}legacy.html#history">原版展馆</a><a class="portfolio-link" href="#report">我的学习记录</a></div></header><main data-learning-view></main><footer class="lab-footer"><span>智驾探索课堂 · 观察有依据，判断有理由</span><span>功能教学模型 · 可反复尝试</span></footer></div>`;
+root.innerHTML = `<div class="learning-app"><a class="skip-link" href="#lesson-title">跳到当前实验</a><header class="lab-header"><a href="#battery/B1" class="lab-brand">${mark}<span>智驾探索课堂</span></a><nav aria-label="学习章节">${sections.map((s) => `<a data-section="${s.id}" href="#${s.id}"><span>${s.number}</span>${s.title}</a>`).join('')}<a href="${base}legacy.html#traffic"><span>04</span>安全上路</a></nav><div class="lab-header-links"><a class="museum-link" href="${base}legacy.html#history">原版展馆</a><a class="portfolio-link" href="#report">我的学习记录</a></div></header><main data-learning-view></main><footer class="lab-footer"><span>智驾探索课堂 · 观察有依据，判断有理由</span><span>功能教学模型 · 可反复尝试</span></footer></div>`;
 const view = root.querySelector<HTMLElement>('[data-learning-view]')!;
 root.querySelector('.skip-link')!.addEventListener('click', (event) => {
   event.preventDefault();
@@ -68,6 +69,8 @@ function conditionsMarkup(draft: unknown) {
     weather: '天气',
     fault: '链路断点',
     rule: '控制规则',
+    batteryType: '电池类型',
+    flow: '充放电状态',
   };
   const values: Record<string, string> = {
     electric: '纯电动',
@@ -93,6 +96,13 @@ function conditionsMarkup(draft: unknown) {
     sensor: '传感器',
     brake: '制动系统',
     target: '目标表面',
+    'lead-acid': '铅酸电池',
+    nimh: '镍氢电池',
+    lfp: '磷酸铁锂电池',
+    nmc: '三元锂电池',
+    rest: '断开电路',
+    charge: '充电器向电池补能',
+    discharge: '电池向用电器供能',
   };
   return `<dl>${Object.entries(draft)
     .filter(([key]) => key in labels)
@@ -138,8 +148,10 @@ function mountLesson(id: Exclude<Route, 'traffic' | 'report' | 'Q1' | 'Q2'>) {
   const status = view.querySelector<HTMLElement>('[data-save-status]')!;
   const feedback = view.querySelector<HTMLElement>('[data-feedback]')!;
   const controls = view.querySelector<HTMLElement>('[data-experiment-controls]')!;
-  const stage = createStage(view.querySelector<HTMLElement>('[data-model-stage]')!, (part) =>
-    experiment?.selectPart?.(part),
+  const stage = createStage(
+    view.querySelector<HTMLElement>('[data-model-stage]')!,
+    (part) => experiment?.selectPart?.(part),
+    (presentation) => experiment?.setPresentation?.(presentation),
   );
   const prediction = view.querySelector<HTMLFieldSetElement>('[data-prediction]')!;
   const explanation = view.querySelector<HTMLFieldSetElement>('[data-explanation]')!;
@@ -181,7 +193,9 @@ function mountLesson(id: Exclude<Route, 'traffic' | 'report' | 'Q1' | 'Q2'>) {
     persist(status);
   }
   const factory =
-    activity.section === 'history'
+    activity.section === 'battery'
+      ? createBatteryExperiment
+      : activity.section === 'history'
       ? createHistoryExperiment
       : activity.section === 'explore'
         ? createStructureExperiment
@@ -195,7 +209,7 @@ function mountLesson(id: Exclude<Route, 'traffic' | 'report' | 'Q1' | 'Q2'>) {
     },
     onChange: saveDraft,
   });
-  if (activity.section !== 'history') {
+  if (activity.section === 'explore' || activity.section === 'lidar') {
     const quiz = document.createElement('a');
     quiz.href = routeHash(activity.section === 'explore' ? 'Q1' : 'Q2');
     quiz.textContent = '课堂知识交流 · 3 道问题';
@@ -302,7 +316,10 @@ function mountLesson(id: Exclude<Route, 'traffic' | 'report' | 'Q1' | 'Q2'>) {
     },
     { signal: abort.signal },
   );
-  listen('[data-replay]', 'click', () => stage.replay());
+  listen('[data-replay]', 'click', () => {
+    if (experiment?.demonstrate) experiment.demonstrate();
+    else stage.replay();
+  });
   listen('[data-quality]', 'click', () => {
     const button = view.querySelector<HTMLButtonElement>('[data-quality]')!;
     const low = button.getAttribute('aria-pressed') !== 'true';
@@ -332,7 +349,7 @@ function mountReport() {
     })
     .join(
       '',
-    )}</div><section class="import-section"><h2>在这台电脑恢复记录</h2><p>选择之前导出的JSON，检查内容后再确认替换。不会与当前记录自动混合。</p><input type="file" accept="application/json,.json" data-import aria-label="选择学习记录文件"><div data-import-preview role="status"></div></section><a href="#history/H1">返回探索课堂</a></article>`;
+    )}</div><section class="import-section"><h2>在这台电脑恢复记录</h2><p>选择之前导出的JSON，检查内容后再确认替换。不会与当前记录自动混合。</p><input type="file" accept="application/json,.json" data-import aria-label="选择学习记录文件"><div data-import-preview role="status"></div></section><a href="#battery/B1">返回探索课堂</a></article>`;
   const abort = new AbortController();
   view.querySelector('[data-export]')!.addEventListener('click', download, { signal: abort.signal });
   view.querySelector('[data-import]')!.addEventListener(
@@ -397,7 +414,7 @@ function navigate() {
 }
 if (!location.hash) {
   const first = document.body.dataset.initialActivity;
-  const id = activities.find((a) => a.id === first)?.id ?? 'H1';
+  const id = activities.find((a) => a.id === first)?.id ?? 'B1';
   history.replaceState(null, '', routeHash(id));
 }
 window.addEventListener('hashchange', navigate);

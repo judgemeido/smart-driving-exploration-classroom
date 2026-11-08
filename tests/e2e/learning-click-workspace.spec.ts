@@ -101,39 +101,29 @@ test('knowledge questions and reviewed corrections fit the classroom viewport wi
   }
 });
 
-test('H1 can order all five sources and save a supported finding entirely by clicking', async ({ page }) => {
+test('H1 compares four vehicles and saves a supported finding entirely by clicking', async ({ page }) => {
   await page.goto('/#history/H1');
   await page.locator('[data-prediction] input').first().check();
   await page.getByRole('button', { name: '操作', exact: true }).click();
-  const cards = page.getByRole('combobox', { name: '查看档案与位置', exact: true });
-  const ordered = await cards.locator('option').evaluateAll((options) =>
-    options
-      .map((option) => ({
-        value: (option as HTMLOptionElement).value,
-        year: Number(option.textContent!.match(/\d{4}/)![0]),
-      }))
-      .sort((a, b) => a.year - b.year),
-  );
-  expect(ordered).toHaveLength(5);
-  for (const [target, card] of ordered.entries()) {
-    await cards.selectOption(card.value);
-    let position = await cards.evaluate((select) => (select as HTMLSelectElement).selectedIndex);
-    while (position > target) {
-      await page.locator('.history-browser button').first().click();
-      position = await cards.evaluate((select) => (select as HTMLSelectElement).selectedIndex);
-    }
+  await expect(page.locator('[data-era]')).toHaveCount(4);
+  for (const [era, path] of [
+    ['pioneer', '燃料 → 发动机'],
+    ['early-electric', '电池 → 电机'],
+    ['hybrid', '燃料＋电池 → 发动机＋电机'],
+    ['modern-ev', '电池 → 电控 → 电机'],
+  ]) {
+    await page.locator(`[data-era="${era}"]`).click();
+    await expect(page.locator(`[data-era="${era}"]`)).toHaveAttribute('aria-pressed', 'true');
+    await expect(page.locator('.evolution-path')).toContainText(path);
   }
-  await page.getByRole('combobox', { name: '史料推理', exact: true }).selectOption({ index: 1 });
+  await expect(page.locator('.evolution-status')).toContainText('4 / 4');
+  await page.getByRole('button', { name: '打开车身观察', exact: true }).click();
   await page.locator('[data-run]').click();
-  await expect(page.locator('[data-evidence-run]')).toContainText('年代顺序成立');
+  await expect(page.locator('[data-evidence-run]')).toContainText('4 / 4');
   await page.getByRole('button', { name: '发现', exact: true }).click();
   await page.locator('[data-explanation] input').first().check();
   await page.locator('[data-complete]').click();
   await expect(page.locator('[data-saved]')).toContainText('已记入');
   await page.reload();
-  expect(
-    await page.evaluate(
-      () => JSON.parse(localStorage.getItem('science-learning:portfolio:v1')!).records.H1.completed,
-    ),
-  ).toBe(true);
+  expect(await page.evaluate(() => JSON.parse(localStorage.getItem('science-learning:portfolio:v1')!).records.H1.completed)).toBe(true);
 });

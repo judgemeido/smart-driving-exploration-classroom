@@ -105,6 +105,28 @@
 .model-area:fullscreen .mechanical-inspector { min-height: 82px; }
 .model-area:fullscreen .mechanical-parts { justify-content: center; }
 .model-area:fullscreen .mechanical-controls { padding-inline: 18px; }
+@media (min-width: 1100px) and (min-height: 650px) and (max-height: 800px) {
+  .mechanical-stage[data-subject="evolution"] .mechanical-inspector {
+    grid-template-columns: minmax(130px, .9fr) minmax(0, 1.5fr) auto;
+    align-items: center;
+    gap: 12px;
+    padding: 7px 10px;
+  }
+  .mechanical-stage[data-subject="evolution"] .mechanical-part-title { font-size: 16px; }
+  .mechanical-stage[data-subject="evolution"] .mechanical-part-description { grid-column: 2; font-size: 14px; }
+  .mechanical-stage[data-subject="evolution"] .mechanical-readouts { grid-column: 3; grid-row: 1; }
+  .mechanical-stage[data-subject="evolution"] .mechanical-readouts dl { display: flex; gap: 12px; }
+  .mechanical-stage[data-subject="evolution"] .mechanical-readouts dl > div { gap: 5px; }
+  .mechanical-stage[data-subject="evolution"] .mechanical-readouts dd { font-size: 14px; }
+  .mechanical-stage[data-subject="battery"] .mechanical-controls,
+  .mechanical-stage[data-subject="evolution"] .mechanical-controls { padding-block: 0; }
+  .mechanical-stage[data-subject="battery"] .mechanical-parts,
+  .mechanical-stage[data-subject="evolution"] .mechanical-parts { padding-block: 1px; }
+  .mechanical-stage[data-subject="battery"] .mechanical-part-description,
+  .mechanical-stage[data-subject="evolution"] .mechanical-part-description {
+    overflow: hidden; white-space: nowrap; text-overflow: ellipsis;
+  }
+}
 @media (max-width: 1350px) {
   .mechanical-controls { gap: 3px 7px; padding-inline: 8px; }
   .mechanical-controls button { padding-inline: 8px; }

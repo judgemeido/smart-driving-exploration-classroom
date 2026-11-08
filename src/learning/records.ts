@@ -36,7 +36,7 @@ export function validatePortfolio(value: unknown): value is Portfolio {
           typeof run.id === 'string' &&
           typeof run.prediction === 'string' &&
           object(run.scene) &&
-          ['vehicle', 'sensor'].includes(String(run.scene.kind)) &&
+          ['vehicle', 'sensor', 'battery', 'evolution'].includes(String(run.scene.kind)) &&
           object(run.evidence) &&
           typeof run.evidence.title === 'string' &&
           typeof run.evidence.summary === 'string' &&

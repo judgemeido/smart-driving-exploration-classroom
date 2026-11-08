@@ -15,7 +15,7 @@ describe('classroom navigation', () => {
     expect(parseRoute('#lidar/unknown')).toBe('S1');
     expect(parseRoute('#traffic')).toBe('traffic');
     expect(parseRoute('#report')).toBe('report');
-    expect(parseRoute('#unknown')).toBe('H1');
+    expect(parseRoute('#unknown')).toBe('B1');
   });
 });
 describe('learning evidence records', () => {
@@ -70,5 +70,28 @@ describe('learning evidence records', () => {
   it('rejects malformed evidence rather than mounting untrusted records', () => {
     const storage = { getItem: () => JSON.stringify({ version: 1, records: { S2: { runs: [null] } } }) };
     expect(loadPortfolio(storage).error).toBeTruthy();
+  });
+  it('restores battery and whole-car evidence alongside previous bench records', () => {
+    const record = appendRun(emptyRecord(), {
+      id: 'battery-one',
+      draft: { batteryType: 'lfp', batteryFlow: 'discharge' },
+      prediction: '电池可以给电机供能',
+      scene: { kind: 'battery' },
+      evidence: { title: '电池观察', summary: '供能方向', metrics: [], notes: [], valid: true },
+    });
+    const oldRecord = appendRun(emptyRecord(), {
+      id: 'old-history', draft: { order: ['history-event-2001'] }, prediction: '旧观察',
+      scene: { kind: 'vehicle' },
+      evidence: { title: '旧证据', summary: '保留', metrics: [], notes: [], valid: true },
+    });
+    const carRecord = appendRun(emptyRecord(), {
+      id: 'whole-car', draft: { vehicleEra: 'hybrid' }, prediction: '两种动力协作',
+      scene: { kind: 'evolution' },
+      evidence: { title: '整车观察', summary: '整车动力', metrics: [], notes: [], valid: true },
+    });
+    const portfolio = { version: 1, records: { B1: record, H1: oldRecord, H2: carRecord } };
+    const restored = loadPortfolio({ getItem: () => JSON.stringify(portfolio) });
+    expect(restored.error).toBeUndefined();
+    expect(restored.portfolio).toEqual(portfolio);
   });
 });

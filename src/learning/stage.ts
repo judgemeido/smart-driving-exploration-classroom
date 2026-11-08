@@ -2,9 +2,13 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js';
 import type { SceneSnapshot } from './types';
-import type { MechanicalMode, MechanicalView } from './mechanical-contract';
+import type { MechanicalMode, MechanicalView, MechanicalRig } from './mechanical-contract';
 import { createVehicleRig } from './mechanical-vehicle';
 import { createSensorRig } from './mechanical-sensor';
+import { createBatteryRig } from './mechanical-battery';
+import { createEvolutionRig } from './mechanical-evolution';
+import { batteryTypes, batteryDirection } from './activities/battery-state';
+import { evolutionEras } from './activities/evolution-state';
 import { driveMechanism, sensorRay, chainFlow } from './stage-model';
 import './mechanical-stage.css';
 
@@ -33,7 +37,11 @@ const descriptions: Record<string, [string, string]> = {
 };
 
 /** Teardown-style inspection; scientific state stays with the classroom experiment. */
-export function createStage(host: HTMLElement, onInspect?: (part: string) => void) {
+export function createStage(
+  host: HTMLElement,
+  onInspect?: (part: string) => void,
+  onPresentation?: (view: { exploded: boolean; cutaway: boolean }) => void,
+) {
   let snapshot: SceneSnapshot = { kind: 'vehicle' };
   let initialized = false,
     disposed = false,
@@ -66,9 +74,21 @@ export function createStage(host: HTMLElement, onInspect?: (part: string) => voi
   const scene = new THREE.Scene();
   scene.background = new THREE.Color('#e9e8e0');
   const camera = new THREE.PerspectiveCamera(36, 1, 0.05, 260);
-  const vehicle = createVehicleRig(),
-    sensor = createSensorRig();
-  scene.add(vehicle.root, sensor.root);
+  const rigs = new Map<SceneSnapshot['kind'], MechanicalRig>();
+  function getRig() {
+    let rig = rigs.get(snapshot.kind);
+    if (!rig) {
+      rig = {
+        vehicle: createVehicleRig,
+        sensor: createSensorRig,
+        battery: createBatteryRig,
+        evolution: createEvolutionRig,
+      }[snapshot.kind]();
+      rigs.set(snapshot.kind, rig);
+      scene.add(rig.root);
+    }
+    return rig;
+  }
   scene.add(new THREE.HemisphereLight(0xffffff, 0x7d8580, 2.2));
   const key = new THREE.DirectionalLight(0xfff4df, 3.2);
   key.position.set(-3, 10, 6);
@@ -86,7 +106,8 @@ export function createStage(host: HTMLElement, onInspect?: (part: string) => voi
   scene.add(fill);
   const groundGeometry = new THREE.PlaneGeometry(240, 120);
   const groundMaterial = new THREE.MeshStandardMaterial({ color: '#d8dad3', roughness: 0.95 });
-  const ground = new THREE.Mesh(groundGeometry, groundMaterial);
+  const carGroundMaterial = new THREE.ShadowMaterial({ color: '#38463e', opacity: .18 });
+  const ground = new THREE.Mesh<THREE.PlaneGeometry, THREE.Material>(groundGeometry, groundMaterial);
   ground.rotation.x = -Math.PI / 2;
   ground.position.y = -0.12;
   ground.receiveShadow = true;
@@ -144,17 +165,18 @@ export function createStage(host: HTMLElement, onInspect?: (part: string) => voi
           ),
           camera,
         );
-        const rig = snapshot.kind === 'vehicle' ? vehicle : sensor;
+        const rig = getRig();
         rig.root.updateMatrixWorld(true);
         for (const hit of raycaster.intersectObject(rig.root, true)) {
+          let part: string | undefined;
           let obj: THREE.Object3D | null = hit.object,
             visible = true;
           while (obj) {
             if (!obj.visible) visible = false;
+            part ??= obj.userData.part as string | undefined;
             obj = obj.parent;
           }
           if (!visible) continue;
-          const part = hit.object.userData.part as string | undefined;
           if (part && partsBar.querySelector(`[data-inspect-part="${part}"]`)) {
             inspect(part);
             break;
@@ -191,7 +213,19 @@ export function createStage(host: HTMLElement, onInspect?: (part: string) => voi
   }
   function partList() {
     const entries =
-      snapshot.kind === 'vehicle'
+      snapshot.kind === 'battery'
+        ? [['cell', '电池外壳'], ['electrodes', '电极'], ['separator', '隔膜'], ['terminals', '端子'], ['pack', '成组连接']]
+        : snapshot.kind === 'evolution'
+        ? [
+            ['body', '整车外形'],
+            ...(['hybrid', 'modern-ev'].includes(snapshot.vehicleEra ?? '') ? [['chassis', '底盘'], ['suspension', '悬架'], ['brake', '制动']] : []),
+            ...(snapshot.energy !== 'fuel' ? [['battery', '电池'], ['motor', '电机']] : []),
+            ...(snapshot.energy !== 'electric' ? [['engine', '发动机']] : []),
+            ['transmission', '传动与车轮'],
+            ...(['hybrid', 'modern-ev'].includes(snapshot.vehicleEra ?? '') ? [['computer', '电控'], ['interior', '座舱']] : []),
+            ...(snapshot.vehicleEra === 'modern-ev' ? [['sensor', '道路感知']] : []),
+          ]
+        : snapshot.kind === 'vehicle'
         ? vehicleParts
         : snapshot.sensor === 'camera'
           ? [
@@ -238,10 +272,49 @@ export function createStage(host: HTMLElement, onInspect?: (part: string) => voi
       .forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.inspectPart === view.selected)));
     const isolate = wrapper.querySelector<HTMLButtonElement>('[data-isolate]')!;
     isolate.setAttribute('aria-pressed', String(view.isolate));
-    isolate.disabled = view.selected === 'overview' || (isSensor && view.sensorScene === 'measurement');
+    isolate.disabled = view.selected === 'overview' || (snapshot.kind === 'evolution' && view.selected === 'body') || (isSensor && view.sensorScene === 'measurement');
     let copy = descriptions[view.selected] ?? descriptions.overview;
     let metrics: [string, string][];
-    if (isSensor) {
+    if (snapshot.kind === 'battery') {
+      const info = batteryTypes[snapshot.batteryType ?? 'lead-acid'];
+      const parts: Record<string, [string, string]> = {
+        overview: [info.name, `${info.form}。${info.use}。`],
+        cell: ['电池外壳', '外壳容纳并保护内部材料；不同化学体系也可以采用相似外形。'],
+        electrodes: ['两种电极 · 储能材料', info.chemistry + '。'],
+        separator: ['隔膜 · 隔开两极', '隔开正负极，避免直接接触；电解质中的离子仍能通过。'],
+        terminals: ['端子 · 连接外部电路', `${batteryDirection(snapshot.batteryFlow ?? 'rest')}。箭头表示能量传递方向。`],
+        pack: ['成组连接 · 从单体到电池组', '多个单体按用途组合；电池组还需要匹配的连接、保护与管理。'],
+      };
+      copy = parts[view.selected] ?? parts.overview;
+      metrics = [['状态', {rest: '断开电路', charge: '充电补能', discharge: '向外供电'}[snapshot.batteryFlow ?? 'rest']], ['结构', '教学样例']];
+      caption.textContent = '结构与能量方向示意 · 外形不唯一，不计算续航';
+    } else if (snapshot.kind === 'evolution') {
+      const era = evolutionEras.find(e => e.id === snapshot.vehicleEra) ?? evolutionEras[0];
+      const overview = {
+        pioneer: '三轮车架与燃油发动机结合，自身动力驱动车轮。',
+        'early-electric': '电池与电机驱动车厢，重量与补能仍需权衡。',
+        hybrid: '发动机与电机协作，动力分配依具体系统而定。',
+        'modern-ev': '电池供能，感知仍需计算与执行协作。',
+      }[era.id];
+      const parts: Record<string, [string, string]> = {
+        overview: [era.label, overview],
+        body: ['整车外形 · 承载与乘坐', '从开放车架到封闭车厢，观察车轮、车身、座舱与转向位置。'],
+        chassis: ['承载底盘 · 纵梁与横梁', '两侧纵梁和多根横梁连接车轮与车身；橙色线束输送电能，深色管路帮助冷却。'],
+        suspension: ['悬架 · 连杆与弹簧减振器', '观察车轮怎样通过连杆连接到底盘；弹簧承受载荷，减振器帮助减小反复振动。'],
+        brake: ['制动 · 制动盘与固定卡钳', '轮毂和制动盘一起转，卡钳固定在支架上；摩擦片夹紧盘面时产生制动力。'],
+        computer: ['电控 · 电路与功率模块', '散热盖下是控制电路与功率模块，调节送往驱动电机的电能。'],
+        interior: ['座舱 · 座椅与转向', '座椅安装在底盘上的导轨上；方向盘通过转向机构帮助改变车轮方向。'],
+        battery: ['车载电池 · 储存能量', '电池向电机供能；不同车辆的电池尺寸、材料和安装方式不同。'],
+        engine: ['燃油发动机 · 产生动力', '燃烧燃料，将化学能转为机械运动，再经过传动驱动车轮。'],
+        motor: ['电机 · 将电能转为运动', '电机接受电能产生转动，仍需要传动将运动送到车轮。'],
+        transmission: ['传动与车轮', snapshot.transmission === false ? '传动断开，电机可转而车轮失去驱动。教学模型忽略惯性与滑行。' : '动力通过传动到达车轮；此页比较功能关系，不计算真实车速。'],
+        sensor: ['道路感知 · 新的信息来源', '传感器提供道路信息，仍需计算、决策与执行协作。'],
+      };
+      copy = parts[view.selected] ?? parts.overview;
+      const p = driveMechanism(snapshot, elapsed);
+      metrics = snapshot.energy === 'electric' ? [['供能', snapshot.power === false ? '断开' : '接通'], ['车轮', p.outputActive ? '演示转动' : '静止']] : [['动力', snapshot.energy === 'hybrid' ? '燃油＋电力' : '燃油'], ['展示', '定性路径']];
+      caption.textContent = '时代特征教学模型 · 非原厂车型与性能仿真';
+    } else if (isSensor) {
       const mode = snapshot.sensor ?? 'lidar',
         r = sensorRay(snapshot);
       if (view.selected === 'overview')
@@ -358,10 +431,12 @@ export function createStage(host: HTMLElement, onInspect?: (part: string) => voi
       fallback.textContent = `二维备用视图：${copy[0]}。${copy[1]} ${metrics.map(([k, v]) => `${k}：${v}`).join('；')}。所有学习操作和证据记录仍可使用。`;
   }
   function draw() {
-    if (disposed || !active || !renderer || lost) return;
-    vehicle.root.visible = snapshot.kind === 'vehicle';
-    sensor.root.visible = snapshot.kind === 'sensor';
-    (snapshot.kind === 'vehicle' ? vehicle : sensor).update(snapshot, elapsed, view);
+    if (!initialized || disposed || !active || !renderer || lost) return;
+    const rig = getRig();
+    for (const candidate of rigs.values()) candidate.root.visible = candidate === rig;
+    rig.update(presentationSnapshot(), elapsed, view);
+    ground.material = snapshot.kind === 'evolution' ? carGroundMaterial : groundMaterial;
+    ground.position.y = snapshot.kind === 'evolution' ? (['hybrid', 'modern-ev'].includes(snapshot.vehicleEra ?? '') ? -.08 : -.1) : -.12;
     scene.fog =
       snapshot.kind === 'sensor' && view.sensorScene === 'measurement' && snapshot.weather === 'fog'
         ? new THREE.Fog('#e9e8e0', 5, 28)
@@ -369,9 +444,10 @@ export function createStage(host: HTMLElement, onInspect?: (part: string) => voi
     renderer.render(scene, camera);
   }
   function resetCamera() {
+    if (!initialized) return;
     userCamera = false;
-    const rig = snapshot.kind === 'vehicle' ? vehicle : sensor;
-    rig.update(snapshot, elapsed, view);
+    const rig = getRig();
+    rig.update(presentationSnapshot(), elapsed, view);
     const pose = rig.camera(view, snapshot);
     camera.position.set(...pose.position);
     camera.zoom =
@@ -394,6 +470,8 @@ export function createStage(host: HTMLElement, onInspect?: (part: string) => voi
       } else {
         rig.root.traverseVisible((object) => {
           if (!(object instanceof THREE.Mesh)) return;
+          for (let parent: THREE.Object3D | null = object; parent; parent = parent.parent)
+            if (parent.userData.excludeFromFit) return;
           let local: THREE.Box3 | null;
           if (object instanceof THREE.InstancedMesh) {
             object.computeBoundingBox();
@@ -416,6 +494,7 @@ export function createStage(host: HTMLElement, onInspect?: (part: string) => voi
         const up = new THREE.Vector3().crossVectors(direction, right).normalize();
         const tanV = Math.tan(THREE.MathUtils.degToRad(camera.fov / 2)) / camera.zoom;
         const tanH = tanV * camera.aspect;
+        const fitFill = snapshot.kind === 'evolution' && !view.isolate ? 0.92 : 0.84;
         let distance = 0;
         for (const component of componentBounds)
           for (const x of [component.min.x, component.max.x])
@@ -425,7 +504,7 @@ export function createStage(host: HTMLElement, onInspect?: (part: string) => voi
                 distance = Math.max(
                   distance,
                   point.dot(direction) +
-                    Math.max(Math.abs(point.dot(right)) / tanH, Math.abs(point.dot(up)) / tanV) / 0.84,
+                    Math.max(Math.abs(point.dot(right)) / tanH, Math.abs(point.dot(up)) / tanV) / fitFill,
                 );
               }
         camera.position.copy(target).addScaledVector(direction, distance);
@@ -476,13 +555,22 @@ export function createStage(host: HTMLElement, onInspect?: (part: string) => voi
       frame = requestAnimationFrame(tick);
     }
   }
+  function presentationSnapshot(): SceneSnapshot {
+    return { ...snapshot, exploded: view.mode === 'exploded', cutaway: view.mode === 'section' };
+  }
+  function presentationChanged() {
+    onPresentation?.({ exploded: view.mode === 'exploded', cutaway: view.mode === 'section' });
+  }
   function inspect(part: string) {
     view.selected = part;
     view.isolate = part !== 'overview';
-    if (part !== 'overview' && view.mode === 'assembly') view.mode = 'section';
+    if ((snapshot.kind === 'evolution' && part === 'body') || (snapshot.kind === 'battery' && part === 'cell')) {
+      view.mode = 'assembly';
+      if (part === 'body') view.isolate = false;
+    } else if (part !== 'overview' && view.mode === 'assembly') view.mode = 'section';
     if (snapshot.kind === 'sensor' && part !== 'overview') view.sensorScene = 'mechanism';
-    if (snapshot.kind === 'vehicle' && part !== 'overview')
-      onInspect?.(part === 'computer' ? 'compute' : part);
+    if (snapshot.kind !== 'sensor') onInspect?.(part === 'computer' ? 'compute' : part);
+    presentationChanged();
     updatePanel();
     resetCamera();
   }
@@ -501,6 +589,7 @@ export function createStage(host: HTMLElement, onInspect?: (part: string) => voi
         view.isolate = false;
       }
       if (b.hasAttribute('data-isolate')) view.isolate = !view.isolate;
+      presentationChanged();
       updatePanel();
       resetCamera();
     },
@@ -526,19 +615,21 @@ export function createStage(host: HTMLElement, onInspect?: (part: string) => voi
     setSnapshot(s: SceneSnapshot) {
       const kindChanged = snapshot.kind !== s.kind,
         deviceChanged = snapshot.sensor !== s.sensor;
+      const subjectChanged = snapshot.batteryType !== s.batteryType || snapshot.vehicleEra !== s.vehicleEra;
+      const started = s.running && !snapshot.running;
       const selectedChanged = snapshot.selected !== s.selected;
       const flagsChanged = snapshot.cutaway !== s.cutaway || snapshot.exploded !== s.exploded;
       const distanceChanged = snapshot.distance !== s.distance,
         first = !initialized;
       stop();
       elapsed = 0;
-      if (first || kindChanged) {
+      if (first || kindChanged || subjectChanged) {
         view.selected = 'overview';
         view.isolate = false;
         view.sensorScene =
           s.kind === 'sensor' && s.sensorView === 'measurement' ? 'measurement' : 'mechanism';
       }
-      if (first) view.mode = s.exploded ? 'exploded' : 'section';
+      if (first || kindChanged) view.mode = s.exploded ? 'exploded' : s.cutaway ? 'section' : s.kind === 'evolution' ? 'assembly' : 'section';
       else if (flagsChanged) view.mode = s.exploded ? 'exploded' : s.cutaway ? 'section' : 'assembly';
       if (!first && !kindChanged && selectedChanged && s.selected && s.kind === 'vehicle') {
         view.selected = s.selected === 'compute' ? 'computer' : s.selected;
@@ -550,18 +641,21 @@ export function createStage(host: HTMLElement, onInspect?: (part: string) => voi
       }
       snapshot = { ...s };
       initialized = true;
-      if (first || kindChanged || deviceChanged) partList();
+      if (first || kindChanged || deviceChanged || subjectChanged) partList();
+      wrapper.dataset.subject = snapshot.kind;
       updatePanel();
       if (
         first ||
         kindChanged ||
         deviceChanged ||
+        subjectChanged ||
         selectedChanged ||
         flagsChanged ||
         (distanceChanged && !userCamera)
       )
         resetCamera();
       else draw();
+      if (started || (s.kind === 'evolution' && s.running)) replay();
     },
     replay,
     resetCamera,
@@ -583,11 +677,12 @@ export function createStage(host: HTMLElement, onInspect?: (part: string) => voi
       abort.abort();
       observer.disconnect();
       controls?.dispose();
-      vehicle.dispose();
-      sensor.dispose();
+      for (const rig of rigs.values()) rig.dispose();
+      rigs.clear();
       environment?.dispose();
       groundGeometry.dispose();
       groundMaterial.dispose();
+      carGroundMaterial.dispose();
       renderer?.dispose();
       wrapper.remove();
     },
