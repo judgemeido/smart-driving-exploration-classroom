@@ -1,55 +1,40 @@
-# 01 汽车进化修复站 Implementation Plan
+# 01 进化修复站 · Impeccable Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking. 本文件只交付计划；总负责人拥有架构、合同与审查决策，全部产品实施（含共享模块和旧页迁移）由 GPT-6.1-sol 集成代理承担。
+> **For agentic workers:** REQUIRED SUB-SKILL: Use executing-plans to implement task-by-task. 本轮只重做计划，未实施。共享文件仅集成负责人写；原基础展品保持，新页承接后旧重复学习按公共UI6A撤出。
 
-**Goal:** 为小学三至六年级新增独立的二维汽车历史游戏页，让学生修复时间轨道、组装需求解决方案、制作未来汽车说明卡，完成一次可复盘的现场挑战。
+**Goal:** 让学生在真实可操作的二维时间轨道、需求装配和未来说明卡中理解汽车发展片段。
 
-**Architecture:** 真正的Vite多页面：旧展厅 `/index.html#history`，游戏 `/games/history/index.html`，点击顶部按钮使用真实URL导航到新HTML文档。新 `games/history/index.html` 和 `src/activities/history-lab/main.ts` 专用bootstrap只挂载本游戏的view/mount与共同游戏导航，不加载旧app host；不是一个SPA里隐藏七个页面。activityId `history-lab` 仅用于计分，绝非路由。canonical内容唯一，共享session/scoring/storage由页面控制器持有。
+**Architecture:** `/games/history/index.html`独立main/bootstrap，仅挂本游戏；既有`/index.html#history`保留14展品与年份/档案，新页承接后撤出旧主题/排序/匹配/未来学习。新页通过source adapter只读引用已有纯数据，不搬迁旧文件，不引用旧控制器。
 
-**Tech Stack:** 当前项目 TypeScript 5.7、原生 DOM、SVG/CSS、Vite 6、Vitest 4、Playwright 1.56；不增加框架、Three.js、模型、联网 AI 或后端。
+**Tech Stack:** TypeScript、Vite、DOM/CSS、几何SVG、Vitest、Playwright；不加载Three/模型/在线AI。
 
-**Spec:** [独立科普游戏总计划（含设计）](2026-11-08-independent-science-games-plan.md)。已有内容依据 `docs/development/history-content.md`，旧文档的“五六年级”和“章内学习”设定被本轮“三至六年级、独立活动页”覆盖。
-
-**Status:** 计划未执行；目录、route、运行接口、计分与生命周期合同已锁定。360 秒是设计默认值，正式儿童可用性评估后再统一修订版本和比较键。
+**Spec:** [Impeccable 二维设计规范](../specs/2026-11-08-science-activities-impeccable-design.md)和[UI实施计划](2026-11-08-science-activities-impeccable-ui-plan.md)为视觉与交互依据；[集成总计划](2026-11-08-independent-science-games-plan.md)和[计分附录](../../engineering/2026-11-08-science-arcade-scoring.md)为公共合同。
 
 ## Global Constraints
 
-- 顶部按钮“进化修复站”导航真实 `/games/history/index.html`，“历史展厅”导航 `/index.html#history`；新游戏与旧展厅是不同HTML文档，不能注册成旧SPA隐藏页。
-- 首轮最多三个机制：时间轨道修复、需求方案组装、未来说明卡。主题卡是随操作展开的资料，不新增测验或第四套游戏。
-- 比赛默认 360 秒，教程在比赛计时之外；自由练习不计时、不写正式比较记录。时长待真实儿童可用性评估统一调整，当前实现读取共享配置的 360000ms。比赛只比较本浏览器实际保存的记录，不假称跨电脑排行榜。
-- 选择 `guided`“带提示” / `standard`“标准挑战”，不默认年级、不采集出生年级。两档使用相同事实、规则、目标和权重；提示密度和干扰项不同，比较键包含档位。
-- 浏览器hidden/后台继续单调比赛时钟；按钮导航到另一HTML、刷新和pagehide（包括BFCache persisted=true）结束正式run为interrupted/unranked。返回该页从ready开始，不恢复正式比赛；练习草稿仅当前document内有效。
-- 游戏分只代表本轮操作表现。脚本助手标为“提示助手”；不声称实时大模型、真实学习测评或真实对手，不生成冒充他人的分数。
-- 所有学生输入使用 `textContent` / `textarea.value`；开放理由不做质量评分，不因词数、关键词、观点优劣获得游戏分。
-- 全部页面正文最小18px；档案资料、任务反馈和结果说明同样适用，不能靠缩字适配窄屏。
-- 新页不复制 `src/chapters/history/controller.ts` 或其 DOM；不能 cross-import sibling controllers。共享内容、共享类型和已提取纯规则可以引用。
-- 不改现有展品年份、来源、图片说明、授权、占位策略；五张排序卡是中国新能源主题片段，不能标作完整世界汽车史。
+- 新活动是独立HTML；既有历史14展品/年份导航保留，主题/任务知识在新活动承接后撤出旧重复UI及专属逻辑；测试迁移覆盖，不只删除断言。
+- 三个机制，不追加选择题测验；主题资料是按需阅读。历史五卡是馆内发展片段，不代表完整世界汽车史。
+- 现有`historyLearningContent`和展品为史料真源；新content只新增操作模块/关系，不复制一份历史正文。
+- 练习默认、正式360000ms；教程和预览不计分/计时，教程之后仍要显式开始。
+- 同档位同码相同乱序/容差/权重。已完成目标本局只读，重练开启新run，重复确认不刷分。
+- 自由理由0–120 Unicode字可选、只存内存，不评观点或字数；所有输入按文本处理。
+- 所有UI状态/输入/响应式/动效遵循Impeccable规范；18px正文、16px辅助、44px目标。
 
 ## Review Focus
 
-- 未选择、非法 ID、重复卡、越界位置和连续点击提交不会污染有效状态或重复得分，见 H2/H3。
-- 键盘、触屏完成同一操作得到同样事件和分数；不能把拖动速度当能力，见 H5。
-- 任意当前 run 的已完成目标均只读，可查看旧反馈；修改已完成的槽卡必须重新练习并开启全新 run，不提供单目标撤销完成，见 H2/H4/H5。
-- 输入法、表情符号、HTML 字符串不会造成提前提交或脚本执行；理由不阻塞比赛完成，见 H4/H5。
-- 切子页、后台、刷新和结束边界遵守公共运行政策；旧展厅的年份位置不被新活动 reset 改动，见 H5/H6。
+- 五卡重复/缺卡/越界、同revision重复检查和插入重排（H2）。
+- 选中卡跨布局重排后焦点和物体身份不丢失；拖动取消不提交（H2/H4）。
+- 能源多种合法链共存，不额外得分；局部错误保留正确槽（H3）。
+- 中文IME/表情/HTML/超长理由不造成提前提交、脚本或卡住正式完成（H3/H4）。
+- 新旧两页数据和reset互不污染；hidden/离页/返回遵守公共合同（H4）。
 
-## 本地证据与保留映射
+## 内容与画面入口
 
-| 已观察文件 / 当前行为 | 新活动决策 | 保留内容 |
-| --- | --- | --- |
-| `src/chapters/history/data.ts` 的 `historyExhibits`、`archiveAssets`；`render.ts` 生成时间线和档案 | 只按 `sourceExhibitId` 读取资料摘要，不复制展品数组和图片映射 | 14 件旧展品、年份定位、图片与来源完整保留 |
-| `learning-data.ts` 的 5 个 `contextCards` | 改为可点击的资料抽屉和关卡内提示卡 | origin/production/energy/sensing/future 的稳定 ID 和准确限定语 |
-| `orderActivity` ID `history-event-order`；五事件初始顺序 2020、2001、2026.03、2009、2015—2016 | 替代旧表单为可修复的五节时间轨道 | 2001、2009、2015—2016、2020、2026.03 的 ID、正确顺序、展品引用 |
-| `matchQuestions` 的 `history-efficiency`、`history-cleaner-energy`、`history-complex-road` | 三个方案组装回合，旧选择题 UI 移除 | 题目主题、解释、正确性依据保留；不把旧选项复制成新的题库 |
-| `futureActivity` 的四个 `future-*` 选择；原理由 10–120 字，只确认写完 | 变为“人/问题 → 技术能力 → 使用条件”的说明卡；自由理由可选 | 四种价值选择均被接受，不排名；原 sample 可作资料示例 |
-| `learning-state.ts` 明确检查有效排列、撤销已改的确认、Unicode 计数 | 提取顺序和文本的纯函数，旧 reducer 保持回归兼容 | 不沿用 `masteredQuestionIds` 作为学习能力标签 |
-| `controller.ts` 的普通切章保留、pagehide/dispose 清空学习；`docs/development/history-content.md` 的生命周期说明 | 新活动使用公共比赛生命周期；旧展厅保留自身观察生命周期 | 新页 reset 不操作旧年份；原 scope 清理模式保留 |
-
-旧展厅中整套“主题阅读/三个学习任务”面板迁移到新活动，旧入口替换为指向 `/games/history/index.html` 的链接。旧展厅和新页不能各挂载一套学习运行状态；资料抽屉也由新页持有。旧教学 data 路径只兼容导出，不保存第二份对象；旧纯规则可留给回归测试，但旧学习交互 DOM 不继续运行。
+旧`learning-data.ts`和`data.ts`保留为知识真源；新source只读引用数据，不引用待删learning-state。旧主题/任务controller/view分支按UI6A撤出，排序/文本纯辅助由新活动rules/state拥有。五主题origin/production/energy/sensing/future和五事件ID保持；01画面按设计规范7节制作。
 
 ## 具体画面与操作循环
 
-固定顶部显示本站、档位、比赛剩余时间或“自由练习”、三站进度。中间 65% 为大幅二维台面，右侧/移动端底部为资料和脚本助手，操作按钮固定在台面下。颜色采用深蓝工作台、明亮能量色和纸白资料，反馈同时有文字、图标和颜色；部件不是普通表单里的 radio 按钮。
+构图按Impeccable规范第4/7节：明亮科学操作桌，五站轨道是首屏主体；桌面约72%舞台/28%短证据，手机变竖向轨道。工具只出现当前步骤所需对象，主操作唯一；辅助文字至少16px、正文/按钮至少18px。颜色、状态、动效和输入按公共规范，不另建深色工作台。
 
 ### 机制 1：修复时间轨道，建议约 65 秒
 
@@ -85,7 +70,7 @@
 
 按“保存说明卡”只核验三张选卡属于已公布的合法关系。错误例如把“补能方便”配成“所有道路风险消失”，显示关系为何不成立，并保留选择供替换。成功显示三槽说明和“这是你的设计选择，游戏没有评价你的观点优劣”。开放理由 0–120 Unicode 字可选，空白也完成；超过 120 字保留原文并提示精简/不附理由，不能因此卡住比赛。标准档鼓励写“因为…还需要…”，但分数和完成条件相同。
 
-共享 `src/ui/arcade/assistant` 只根据当前 stage、首个错误和 hint 次数选择固定台词，不假装理解自由文本。教程约 20 秒，提供一张与正式事件不同的练习卡让学生完成“选卡→放槽→检查”；一般教程反馈不计时、不计分、不发 objective facts。主学习关卡的检查才产生计分事实；教程结束再启动练习或比赛 session。随时可看操作说明，连对效果只产生装饰火花，不加分。
+共享 `src/ui/arcade/assistant` 只根据当前 stage、首个错误和 hint 次数选择固定台词，不假装理解自由文本。教程约 20 秒，提供一张与正式事件不同的练习卡让学生完成“选卡→放槽→检查”；一般教程反馈不计时、不计分、不发 objective facts。主学习关卡的检查才产生计分事实；教程结束返回准备确认，学生显式开始后才启动练习或比赛 session。随时可看操作说明，连对效果只产生装饰火花，不加分。
 
 ## 状态机与接口
 
@@ -120,7 +105,7 @@ reduceHistoryLab(state: HistoryLabState, action: HistoryLabAction, content: Hist
 - 只有有效实质草稿编辑递增该 objective revision；未知 ID、同位置移动、重复不变的检查和 incomplete 检查不递增 revision、不发 fact。session.record 内部绑定 runId/seq，草稿 revision 不能充当全局序号。
 - 错误 `check` 产出 incorrect fact；成功第一次产出 correct fact。同一 objective 在比赛和练习的当前 run 中完成后均锁定；只能回看反馈，不能单项撤回确认或删除共享事实。
 - 未完成的未来草稿修改能力选择时清空对应情境/条件槽与检查反馈；四种选择的合法关系都同等接受。完成后的槽卡只读。未来自由理由不改变关系、不产生 fact；当前结果屏显示最后原始理由，理由只属于内存 outcome，不写共同分数历史，下一轮或刷新清空。
-- `reset-practice` 重置的是整轮：若旧练习 session 仍 running，先 `session.finish('abandoned')`；再用 `createHistoryLabState` 清空全部目标/草稿/理由，调用 `session.start(practice config)` 开始零目标的新 run。已结束的旧 session 不重复 finish。不提供单目标 uncompletion API，练习 `score/elapsedMs` 始终为 null。
+- `reset-practice` 重置的是整轮：若旧练习 session 仍 running，先 `session.finish('abandoned')`；先调用 `session.start(practice config)`，仅返回ok才用 `createHistoryLabState` 重建全部目标/草稿/理由；失败保留上一轮只读成果并显示原因，不显示假running新局。已结束的旧 session 不重复 finish。不提供单目标 uncompletion API，练习 `score/elapsedMs` 始终为 null。
 - result不接受玩法输入；主关卡守卫active+session running。hidden只禁用输入且比赛时钟继续；新页导航/pagehide由专用bootstrap结束正式run，返回ready。纯reducer不读时间/DOM/storage。
 
 ## 锁定的权重、计分与公共运行合同
@@ -135,102 +120,56 @@ reduceHistoryLab(state: HistoryLabState, action: HistoryLabAction, content: Hist
 
 运行与比较使用 `src/shared/arcade/{types,session,scoring,storage,challenge-code}.ts`，界面使用 `src/ui/arcade/{shell,results,assistant,styles}`。`challenge-code` 决定稳定卡序，比较键精确为 `activityId + challengeCode + profile + contentVersion + scoringVersion + durationMs`。本页 `activityId` 为 `history-lab`。每个控制器由共享 factory 创建一个页面拥有的 session，调用 `session.start(config)`、`session.record(facts)`、`session.finish(reason)`、`session.subscribe(listener)`、`session.setActive(active)`、`session.dispose()`；共享拥有时钟、去重和一次性 finalize，没有全局 singleton 或第二份 store。
 
-专用bootstrap在教程结束后调用session.start，subscribe驱动共同游戏shell。浏览器hidden继续单调时钟；真实新页导航/pagehide/刷新结束正式run为interrupted/unranked，BFCache退出也执行，pageshow返回ready、不恢复正式状态。练习草稿只在当前document内存在；结果屏显示真实部分成果与本机历史，理由仅内存。共同游戏导航使用真实href，不保留mounted run跨文档。
+教程结束后显示显式“开始练习/开始正式挑战”，点击后专用bootstrap才调用session.start，subscribe驱动共同游戏shell。浏览器hidden继续单调时钟；真实新页导航/pagehide/刷新结束正式run为interrupted/unranked，BFCache退出也执行，pageshow返回ready、不恢复正式状态。练习草稿只在当前document内存在；结果屏显示真实部分成果与本机历史，理由仅内存。共同游戏导航使用真实href，不保留mounted run跨文档。
 
-## 文件所有权
+## 文件与任务
 
-| 文件 | 职责 / 修改边界 |
-| --- | --- |
-| Create `src/content/history-learning.ts` | 从旧 learning-data 原样提取 canonical 教学对象和类型 |
-| Modify `src/chapters/history/learning-data.ts` | 仅 re-export canonical exports |
-| Create `src/shared/history-learning-rules.ts` | 提取排列验证/移动/比较和 Unicode 计数，不依赖 DOM |
-| Modify `src/chapters/history/learning-state.ts` | 使用提取规则，保持旧签名和原回归测试 |
-| Create `src/activities/history-lab/content.ts` | 组装链/合法说明关系/教程与档位，引用 canonical ID 与反馈，不复制史料 |
-| Create `src/activities/history-lab/state.ts` | 唯一游戏 reducer 与 fact，完整状态机 |
-| Create `src/activities/history-lab/view.ts`、`styles.css` | 静态页壳、局部状态 render、SVG 台面与文本资料 |
-| Create `src/activities/history-lab/controller.ts` | host scope 输入、焦点、pointer 与键盘等价适配、公共运行接口 |
-| Create `src/activities/history-lab/index.ts` | 只导出view/mount供专用main消费，不注册进旧app runtime |
-| Create `games/history/index.html`、`src/activities/history-lab/main.ts` | 独立HTML入口与bootstrap，只装载共同游戏导航和本游戏host；pagehide含BFCache关闭正式run，pageshow返回ready |
-| Modify `vite.config.ts`（集成代理） | 按新总计划配置真实多HTML构建入口，包含index.html与三个独立games入口，直接URL可构建/预览 |
-| Modify `src/chapters/history/controller.ts`、`view.ts`、`learning-view.ts` | GPT-6.1-sol 集成代理移除旧学习挂载/替换 route 链接；保留 gallery 控制路径，不由新活动文件引用 |
-| Create `tests/unit/history-lab/content.test.ts`、`state.test.ts`；`tests/e2e/history-lab.spec.ts` | 本地规则、真实输入和旧页保留回归 |
-| Modify `docs/development/history-content.md` | 唯一内容源、独立入口、计分性质与档位维护说明 |
+新增文件均在`src/activities/history-lab/`：`source.ts`只读事实、`content.ts`定义槽位/合法关系/档位、`state.ts`唯一reducer、`graphics.ts`轨道/场景几何、`view.ts`稳定DOM、`controller.ts`接线、`styles.css`局部布局、`index.ts`导出view/mount、`main.ts`调用独立bootstrap。入口为`games/history/index.html`。公共UI只消费，不复制；旧src/chapters的修改/删除只由集成负责人按公共UI6A执行，纯数据仍保留供source引用。
 
-公共 `src/app/*`、全局样式导入、导航、活动注册、`src/shared/arcade/{types,session,scoring,storage,challenge-code}.ts` 与 `src/ui/arcade/{shell,results,assistant,styles}` 的架构、合同和审查由总负责人决策，产品实施全部由 GPT-6.1-sol 集成代理承担。本活动只消费共享合同，不写第二份运行、计分、store 或通用结果/助手组件。
+### H1：只读内容适配与版本化操作内容
 
-## 实施任务
+**Files:** Create source/content，`tests/unit/history-lab/content.test.ts`。
 
-### H1：提取唯一内容与可复用规则
+**Interfaces:** `getHistorySource()`返回现有historyLearningContent及展品只读引用；`historyLabContent:HistoryLabContent`定义稳定objective/slot/module/claim IDs；排序/Unicode纯规则由本页rules/state拥有，不依赖待删旧reducer。
 
-**Files:** canonical history content、共享纯规则、旧 data/state shim，`tests/unit/history-lab/content.test.ts`。
+- [ ] 写`source_references_existing_facts_without_mutation`、`five_event_ids_and_order_are_preserved`、`energy_plans_are_complete`；断言14展品、五主题/五事件、五objective权重和1000，未来四组合法关系齐全。
+- [ ] 运行`npm run test:unit -- tests/unit/history-lab/content.test.ts`确认RED。
+- [ ] 实现adapter及操作内容；旧纯内容只读，文案不复制；旧学习专属逻辑在UI6A撤出。
+- [ ] 重跑本测试及既有history单元，记录GREEN；具备Git授权时独立保存。
 
-**Interfaces:** `historyLearningContent: HistoryLearningContent` 保持当前结构；共享导出 `isValidHistoryOrder(order,cardIds): boolean`、`moveHistoryOrder(order,cardId,toIndex): readonly string[]`、`hasCorrectHistoryOrder(order,correctOrder): boolean`、`countReasonCharacters(value): number`。数组输入只读，非法移动返回原数组。
+### H2：五节时间轨道及插入顺移
 
-- [ ] 添加 RED 测试：旧路径和 canonical 对象 `toBe` 相同；5 卡 ID/年份/正确序列及 exhibit 引用不变；全部 14 个展品仍存在。顺序函数拒绝重复、缺卡、unknown、-1、5、1.5、NaN；`汽车🚗` 计数为 3。
-- [ ] 运行 `npm run test:unit -- tests/unit/history-lab/content.test.ts`，确认新导出缺失产生 FAIL。
-- [ ] 移动唯一教学对象，旧路径 re-export；提取纯函数后让旧 reducer 消费，不能复制正文或改原完成判定。
-- [ ] 运行新测试和 `npm run test:unit -- tests/unit/history`；两者通过后由负责人保存变更。
+**Files:** Create state/graphics/view的timeline部分；Test `tests/unit/history-lab/state.test.ts`、`tests/e2e/history-lab-ui.spec.ts`。
 
-### H2：时间轨道与主动推进
+**Interfaces:** 生产上文createHistoryLabState/reduceHistoryLab；动作move/check/hint/continue映射公共选择/拖动。槽位0..4，非法位置/重复卡为no-op。
 
-**Files:** activity content/state、`tests/unit/history-lab/state.test.ts`。
+- [ ] RED：正确排列在check前不完成；check只发一次history-event-order事实，主动continue才到需求；第一对倒置可定位且不重置其余卡；错误/成功前后revision正确。
+- [ ] 实现唯一领域排列和插入顺移；选中/拖放预览不计分；成功后只读，可回看但不再次计分。
+- [ ] 跑`npm run test:unit -- tests/unit/history-lab/state.test.ts`；build后跑timeline UI路线，确认鼠标/键盘/合成touch等效、竖轨可用、取消无残留，焦点不丢失。
+- [ ] 看初始/选择/倒置/修好四态截图；不符合规范第7节则修正后保存。
 
-**Interfaces:** 上述 `createHistoryLabState/reduceHistoryLab`；`HistoryLabContent` 记录 stable objective/slot/module ID 与版本；H2 先支持 tutorial/timeline/check/hint/continue/finish。
+### H3：三幅需求装配与未来说明卡
 
-- [ ] 写 RED 用例 `timeline_requires_check_and_continue`：五卡移至正确顺序前不完成，check 发一次 `history-event-order` correct fact，stage 仍 timeline；continue 才进入 needs。`invalid_and_repeated_actions_are_noops` 覆盖非法位置/ID、同 revision check；`timeout_freezes_partial_state` 覆盖任何阶段结果冻结。
-- [ ] 运行 `npm run test:unit -- tests/unit/history-lab/state.test.ts`，观察缺失接口 FAIL。
-- [ ] 实现 reducer，固定旧五卡 ID 和原初始错序；共享 challenge-code 只固定干扰卡显示顺序，不改变答案。错误反馈带第一对倒置 card ID，不提前正确确认。
-- [ ] 同文件补 `practice_restart_starts_new_run_without_stale_objectives`、`completed_objective_is_read_only_in_both_modes` 与正确后连点 continue 不跳过下一回合的断言；reset-practice 清空整轮目标和理由，不生成撤回 fact，运行至 PASS。
+**Files:** Complete content/state/graphics/view；Test content/state及UI E2E。
 
-### H3：需求方案台的关系表与试运行
+**Interfaces:** 沿用上文三条能源plan ID/三槽，未来四组claim关系；五objective为history-event-order400、三需求各100、history-future-choice300。
 
-**Files:** activity content/state/view/styles，state test。
+- [ ] RED：三需求完整正确关系才发correct，空槽facts=[]，功能错误为incorrect，正确槽保留；三种能源链均成立，换路线不增加目标数；未来关系四种均合法，空理由也成功。
+- [ ] RED：0/120/121 Unicode字、emoji、空白、HTML字串、IME组合；超限保留并可不附理由完成，不按关键词/观点加分。
+- [ ] 实现需求物体/路径与未来句子，反馈锚定错槽；只更新改变部分。教程/资料/常驻帮助不发facts，明确答案提示保留usedHint。
+- [ ] 跑全部history-lab单元和UI E2E；每条合法能源关系都有可见因果，最终卡展示实际选择而非通用奖状；保存。
 
-**Interfaces:** `evaluateHistoryArrangement(objectiveId, slots, content): { verdict:'correct'|'incorrect'|'incomplete'; invalidRelationId?:string }`；合法方案按稳定 plan/module/slot ID 校验，展示顺序不参与正确性。
+### H4：独立页、公共session、UI验收与旧功能保留
 
-- [ ] RED 测试 `production_requires_ordered_cooperation`、`three_energy_plans_each_have_valid_complete_path`、`perception_cannot_skip_analysis_or_action`，每组断言错误关系 ID 与修复后 correct；不完整输入仅提示，不生成 incorrect fact。
-- [ ] 运行 state test，确认新评价函数缺失 FAIL。
-- [ ] 内容表实现三个需求关系和固定因果说明；燃料分支最多三种明确教学链，不加入额外经营数值。state 支持 place/select/check/continue，正确后一次 fact、一次主动推进。
-- [ ] 实现三幅台面与局部试运行表现；render 消费判定结果，不自己判答案；reduced-motion 直接显示静态箭头和说明。
-- [ ] 补重复 check、错误后仅换一槽、未完成时改变能量方案清空草稿反馈、完成后方案只读、未知 slot/module、干扰项显示重排等测试，运行至 PASS。
+**Files:** Complete controller/styles/index/main及独立HTML；`tests/e2e/history-lab-competition.spec.ts`，维护指南追加新页说明。
 
-### H4：未来说明卡与真实完成结果
+**Interfaces:** view:string/mount(host):ChapterController；公共session为每页实例，record返回true才提交候选state（空facts也守卫）。教程后显式start。
 
-**Files:** activity content/state/view、state test。
+- [ ] RED：同码/档位/假时间同分；首次错/答案提示影响首次贡献，重复/动画不加分；record拒绝不改state。
+- [ ] 实现公共UI的真实结果/未保存/中断状态；hidden继续正式预算，去其他HTML/pagehide/BFCache中断，返回准备页，旧历史状态不被游戏reset操作。
+- [ ] 跑`npm run test:unit -- tests/unit/history-lab tests/unit/arcade`、build、history新E2E和既有history-domain/history-learning；按UI6A将旧学习覆盖迁到新页，另加旧入口撤出及14展品保留断言。重练start失败保留旧成果的单元/浏览器用例通过。无Three/GLB请求。
+- [ ] 按公共UI计划UI4/UI7尺寸/输入/评分门槛交付；截图有乱序、单卡纠错、三需求和未来卡。记录儿童适龄/3–6分钟尚未实测。
 
-**Interfaces:** `evaluateFutureClaim(choiceId, claimSlots, content): 'correct'|'incorrect'|'incomplete'`；四种能力关系都可合法完成。`getHistoryLabOutcome(state, content): { completedObjectiveIds:readonly string[]; futureClaim:readonly string[]|null; reason:string; finishReason:'completed'|'timeout'|'abandoned'|'interrupted' }` 不返回“学习能力”结论或本地总分。
+## 交付边界
 
-- [ ] RED 测试 `all_four_values_can_finish_with_compatible_claims`、`claim_mismatch_has_retry_without_erasing_draft`、`empty_reason_does_not_block_completion`、`reason_never_changes_objective_facts`、`partial_outcome_never_claims_completed_card`。
-- [ ] 运行 state test，确认缺失接口 FAIL。
-- [ ] 实现三槽、可选原始理由与 fixed-copy 助手；保留120字提示但不截断、不因未附理由扣分。完成/超时成果读取内存 outcome；当前结果屏显示理由，共同分数历史不保存理由，新一轮或刷新清空。
-- [ ] outcome 测试通过；`<img onerror=...>`、emoji、组合输入的真实 DOM 用例归 H5。
-
-### H5：独立页面、三种输入与运行事件适配
-
-**Files:** `games/history/index.html`、activity main/index/view/controller/styles、`tests/e2e/history-lab.spec.ts`；集成代理配置Vite多入口，main用view/mount创建仅本游戏的文档host；共同导航是href按钮，不使用旧app runtime。
-
-**Interfaces:** `export const view: string`；`export function mount(host: HTMLElement): ChapterController`。controller 使用共享 session.ts 的 factory 创建页面拥有的 ArcadeSession，使用共同 shell/results/assistant，subscribe 读取运行状态，将 reducer facts 一次交给 `session.record(facts)`；不自行操作 localStorage。
-
-- [ ] 先写 E2E `keyboard_finishes_all_three_mechanics`、`touch_select_then_place_matches_pointer`、`tutorial_does_not_start_clock_or_score`、`readable_feedback_waits_for_continue`、`inactive_input_and_disposed_listeners_are_ignored`；同时断言 `practice_score_and_elapsed_are_null`、正式finish/status只取四个统一值、`body_copy_is_at_least_18px`。
-- [ ] 公共路由接入后运行 `npm run build` 与 `npm run test:e2e -- tests/e2e/history-lab.spec.ts`，确认未实现界面 FAIL；构建调度由 GPT-6.1-sol 集成代理 串行安排。
-- [ ] pointer 拖放和 click-select/drop 都产生同一 action。键盘 Tab 选卡/槽、Enter/Space 操作、Escape 取消选择；选卡后播报卡名与目标位置，移动后焦点保留。目标最小 44×44，移动端单列，不用颜色或 hover 单独传意。
-- [ ] 接 session.start/record/finish/subscribe/setActive/dispose 与共同结果；scope 清理全部监听和订阅，无自建比赛 tick/store。重新练习按 finish abandoned（仅旧run仍running）→整轮domain清空→start practice 顺序执行，不能删除单项共享事实。预览/教程无计分事实，主关卡输入守卫 active+running。组合输入期间不触发表单提交；理由用 value，当前结果用 textContent。
-- [ ] 添加真实多页验收：直接`/games/history/index.html`无需旧app host且无3D请求；顶部按钮导航`/index.html#history`和共同游戏导航均加载新document。pagehide含persisted=true只finalize一次interrupted；前进后退返回ready、零正式目标，练习草稿不跨document恢复；仅hidden不关闭run，时钟继续。
-- [ ] 补 `ime_and_html_reason_are_safe`、`both_profiles_have_identical_objectives_and_truth_rules`、`hint_excludes_first_correct_but_correction_keeps_completion_weight`、`shared_scoring_returns_1000_933_and_920`、`replay_cannot_duplicate_score`、`practice_restart_finishes_old_run_before_new_start`、`reason_is_not_in_common_history_and_clears_on_new_run_or_refresh`；重练断言新runId、零目标、score/elapsedMs null，旧fact不撤回。分数断言消费共同 scorer。检查1440×900、768×1024、390×844与 reduced-motion，运行至 PASS。
-
-### H6：迁移旧学习入口并回归旧展厅
-
-**Files:** GPT-6.1-sol 集成代理 协调旧 controller/view/learning-view 和导航；本计划拥有开发指南与 history-lab E2E 保留断言。
-
-**Interfaces:** 新游戏与旧展厅按钮分别指向独立HTML URL，使用真实文档导航；新view/mount仅由专用main bootstrap消费，不由旧app runtime注册。旧页不挂载游戏host，新reset不操作旧任务。
-
-- [ ] 先添加 `old_gallery_retains_fourteen_exhibits_and_year_selection`、`game_reset_never_imports_or_mutates_gallery_state`、`only_game_document_mounts_learning_surface`、`hidden_continues_clock_but_document_navigation_interrupts`、`refresh_records_interrupted_unranked_and_never_resumes`、`page_exit_finalizes_once`；按钮导航产生新document，旧正式run中断不排名；BFCache返回ready无恢复，hidden仍继续时钟。
-- [ ] GPT-6.1-sol 集成代理 移除整套旧主题阅读/学习面板及其挂载，旧入口变 `/games/history/index.html` 链接；保留展品 render、图片处理和原 scroll/year listeners。更新历史指南至三至六年级及新文件维护映射。
-- [ ] 运行 `npm run test:unit -- tests/unit/history tests/unit/history-lab`；GPT-6.1-sol 集成代理 再运行 `npm run build`、`npm run test:e2e -- tests/e2e/history-lab.spec.ts tests/e2e/history-domain.spec.ts tests/e2e/chapters.spec.ts`。迁移后的旧 learning E2E 只保留内容/规则覆盖或调整为新 route，不继续验收已移除的旧 UI。
-- [ ] 核对新活动依赖图没有 Three、旧 controller 或 docs runtime import；所有 objective 权重累计1000，比较键含活动/challengeCode/profile/contentVersion/scoringVersion/durationMs，比较记录只来自实际 session storage。通过证据写入交付记录，不把计划命令当已通过。
-
-## 交付验收与已锁定的公共依赖
-
-完成标准是：三个机制全程真实可操作；错误能看懂并局部重试；两档同一规则；键盘/触屏可完成；五项实际确认只计一次；未来观点不做质量评分；旧 14 展品仍可进入；新页和旧页没有重复学习运行实例。
-
-依赖GPT-6.1-sol集成代理交付Vite多HTML入口/专用bootstrap、共同游戏导航、共享arcade/UI及旧面板迁移；总负责人拥有架构/合同/审查。以新独立科普游戏总计划（含设计）为主合同，[计分工程合同](../../engineering/2026-11-08-science-arcade-scoring.md)保持同权重/公式/接口。hidden继续计时，真实文档导航/pagehide（含BFCache）结束正式run，返回ready无恢复；不复活已删除旧master/spec。
+旧主题/任务已由新游戏承接后撤出，历史14展品/档案/年份定位保留；新游戏与旧展厅是独立文档，同一文档只挂载本游戏一次。新页面完成后的视觉、布局和纠错以Impeccable规范为准；本文件保留科学规则，不以测试通过代替真实操作和截图。当前所有任务待实施，计划未产生实际得分或UI审核分数。

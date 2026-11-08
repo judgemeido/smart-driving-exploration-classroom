@@ -1,60 +1,40 @@
-# 02 汽车系统维修台 Implementation Plan
+# 02 系统维修台 · Impeccable Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking. 本文件只交付计划；总负责人拥有架构、合同与审查决策，全部产品实施（含共享模块和旧页迁移）由 GPT-6.1-sol 集成代理承担。
+> **For agentic workers:** REQUIRED SUB-SKILL: Use executing-plans to implement task-by-task. 本轮只重做计划，未实施；公共文件由集成负责人拥有，旧结构基础互动/复习/归位保留，重复13挑战按UI6A撤出。
 
-**Goal:** 为小学三至六年级新增独立二维结构游戏页，通过诊断教学剖面、补装部件、连接系统关系，让学生看见汽车的运动、支撑与感知需要不同部件配合。
+**Goal:** 在可辨认的汽车几何剖面里补装部件、连出功能关系、看到系统如何配合。
 
-**Architecture:** 真正的Vite多页面：顶部“拆解与交互”导航 `/index.html#explore`，“结构挑战”导航 `/games/structure/index.html`；点击按钮加载新HTML文档。`games/structure/index.html` + `src/activities/structure-lab/main.ts` 专用bootstrap只挂载本游戏view/mount和共同游戏导航，不加载旧app host/GLB/workbench/model-canvas；不是单SPA内隐藏多页、并排/弹窗/模型下方追加区。activityId `structure-lab` 只是计分ID，不是路由。旧3D自己的控制/复习/归位保留。
+**Architecture:** `/games/structure/index.html`独立二维页；`/index.html#explore`保留模型、原三任务、复习、归位和动力故事；13项旧挑战由新游戏承接后撤出。新source只读现有纯教学数据和目标说明，不移动旧导出、不加载旧controller/rig/scene/Three。
 
-**Tech Stack:** TypeScript 5.7、原生 DOM、SVG/CSS、Vite 6、Vitest 4、Playwright 1.56；新页不引入 Three.js、模型资源、联网 AI、后端或额外 UI 框架。
+**Tech Stack:** TypeScript、Vite、DOM/CSS、几何SVG、Vitest、Playwright，不增加游戏/动画框架。
 
-**Spec:** [独立科普游戏总计划（含设计）](2026-11-08-independent-science-games-plan.md)。既有知识与模型事实依据 `docs/development/explore-content.md`。
-
-**Status:** 计划未实施；内容目录、route、运行接口、计分和生命周期合同已锁定。360 秒为设计默认值，实际儿童可用性评估后再统一调整版本及比较键。
+**Spec:** [Impeccable 二维设计规范](../specs/2026-11-08-science-activities-impeccable-design.md)和[UI实施计划](2026-11-08-science-activities-impeccable-ui-plan.md)决定剖面构图/输入/反馈；[集成总计划](2026-11-08-independent-science-games-plan.md)与[计分附录](../../engineering/2026-11-08-science-arcade-scoring.md)决定公共合同。
 
 ## Global Constraints
 
-- 用户修正优先：02顶部两个按钮是真实页面导航：“拆解与交互”href=/index.html#explore，“结构挑战”href=/games/structure/index.html。点击加载各自HTML文档，不在旧app里切隐藏host；所有实施由GPT-6.1-sol集成代理承担。
-- 游戏玩法/教程/HUD/results只在结构游戏独立HTML的host中；旧/index.html文档不挂载该游戏或挑战入口面板。不存在另一个隐藏游戏host可激活；旧aside/弹窗/模型下方无挑战启动器。
-- 两个机制足够：二维剖面诊断/装配、系统关系连接；不再新增第三套选择测验、驾驶模拟或经营系统。
-- 全部页面正文最小18px；任务、部件功能、资料反馈与结果说明均适用，窄屏通过换行布局适配。
-- 比赛默认360秒，教程在计时之外；同样台面可自由练习，练习不计时、不写正式比较记录。时长待真实儿童可用性评估统一调整，当前读取共享配置360000ms。
-- `guided`“带提示” / `standard`“标准挑战”分别适合需要更多引导/更独立的学生；不推断年级，不因年龄硬性禁用；相同真值表、操作和权重，比较键包含档位。
-- 浏览器hidden/后台继续单调比赛时钟；按钮导航到另一HTML、刷新和pagehide（包括BFCache persisted=true）结束正式run为interrupted/unranked。返回该页从ready开始，不恢复正式比赛；练习草稿仅当前document内有效。
-- 13 个旧主题全部映射，但结果表述是“教学图示中完成”，不能叫“在实际 GLB 找到 13 个零件”或真实维修能力认证。
-- 毫米波雷达没有原 GLB 独立节点，始终标“教学示意”；底盘是组合系统，至少包含悬架和制动，不能画成一个虚构单件。
-- 关系图用来解释功能，不是高压接线图、维修手册或特定量产车配置。位置与表现是教学示意，不能据此认定真实车型配置。
-- 游戏分只评价已公布的操作规则；提示助手是固定台词，不伪装真实 AI。不得生成假同学/真对手分数、冒充跨电脑实时排行榜。
-- 不复制旧 `explore/controller.ts`、rig、scene 或整个 learning controller；不 cross-import sibling controllers。共享内容、共享类型和提取后的纯规则可用。
+- 13主题按4动力/4结构/5感知保留，另3个功能关系图，共16目标；新页是教学图示，不是真实车型维修或GLB拾取。
+- 旧13项启动器/面板/专属控制分支在新页承接后撤出，对应学习覆盖迁到新E2E；基础控制/复习/归位不删。
+- 只显示当前组，不一次铺满13件；手机按当前系统放大，不缩小全车。
+- 安装阶段与关系阶段分开；同一物体不同时承担移动和连线手势。局部错误局部改，已确认目标本局只读。
+- 18px正文/按钮、16px辅助、44px目标；所有拖放/连线有点击和键盘等效路线。
+- 默认练习，正式360000ms；教程后显式开始，阶段成功主动继续；hidden继续预算，离页中断。
+- 图示不承诺制动距离、绝对安全/无盲区；毫米波部件/槽位/成果都标教学示意。
 
 ## Review Focus
 
-- 同一部件连续放置/检查不能刷分，轮胎在动力和抓地两种语义中不得因一个动作自动完成两个主题，见 X2/X3。
-- 底盘要同时有悬架和制动；两个悬架不能替代制动，见 X1/X2。
-- 能量、转动、支撑、感知信息不能任意互换；装上部件但关系断开时不能显示系统修复成功，见 X3。
-- 触屏和键盘没有 hover/精细拖动仍能完整安装连线；同一真值表发同样 facts，见 X4。
-- 原模型故障、旧爆炸图/归位/分类/镜头状态不会影响新图示或被新 reset 改动，见 X5。
+- 悬架与制动共同完成底盘；不能用两个悬架或单独万能部件替代（X1/X2）。
+- 重复边、未知端口、反向边、跨组边、同revision验证不刷分（X2）。
+- 取消拖线/缩放/手机重排不留悬空输入或把边连到错误端口（X3）。
+- 正确安装/正确连线被保留，错一条边不重做全部；确认后依赖件不能撤走（X2/X3）。
+- 原三任务、复习、归位与故事保持；旧13挑战撤出，新活动reset不触发旧action（X4）。
 
-## 已观察代码与迁移边界
+## 来源适配
 
-| 证据文件 | 原行为 | 新页使用 / 原页保留 |
-| --- | --- | --- |
-| `src/chapters/explore/data.ts`、`mission-state.ts`、`mission.ts` | BatteryPack→ADAS→Cabin 三步任务，错误不推进 | 原 3D 展厅原样保留，不作为新比赛前置条件 |
-| `learning-data.ts` 的 `exploreLearningTasks/exploreLearningGroups` | 动力 4、结构 4、感知 5 个主题；每个带功能题和准确解释 | 提取 canonical 13 主题与 4+4+5 分组；旧选择题 UI 被操作关卡替代，解释作为确认后知识卡 |
-| `learning-targets.ts` 的 `names/kind/requiredTargetGroups` | 最近允许祖先、真实子节点；底盘需悬架与 Brakes | 内容源与模型映射原样保留，新页使用独立 diagram ID，不投递 `source:model` |
-| `learning-state.ts` | 找到目标 + 正确回答 + 主动 continue 才完成；diagram/model 区别、去重 | 旧规则保留回归；新 reducer 单独判断安装和连接，不滥用旧 found 字段冒充模型拾取 |
-| `learning-view.ts` 的 `diagramLocations` | 文字位置示意，已声明不是真实模型配置；毫米波为 teaching 卡 | 新页重新画 SVG 示意和可聚焦 overlay；共享 part 元信息可提取，不复制旧整套 UI |
-| `src/chapters/explore/view.ts` 的 `data-learning-start` / `data-explore-learning` | 当前在旧3D页嵌入挑战启动器和面板，是本轮明确移除的错误基线 | 删除旧view/aside这两个元素和挑战挂载；入口只在02顶部子按钮，旧aside不另留挑战链接 |
-| `assembly-state.ts` | 24 个真实顶层装配分 chassis/power/body/sensors，1 秒主动四步归位 | 原 3D sibling 保留，首轮新页不新建归位机制；归位不加入新 13 项完成统计 |
-| `vehicle-rig.ts`、`camera-observation.ts`、`controller.ts` | 爆炸、观察恢复、暂停归位；模型真实 raycast | 本计划不改其功能；新活动不加载这些模块 |
-| `powerflow-state.ts`、`data.ts` 的 `powerflowStages` | 0、1.2、2.55、3.45 秒四阶段，5 秒原动力故事 | 原故事完整保留；新 SVG 试运行是独立说明，不复用故事时钟 |
-| `docs/development/explore-content.md` | 说明 source、节点、pagehide、切章、归位等维护事实 | 追加独立页和 canonical 内容维护说明，继续保留模型维护限制 |
-
-旧`/index.html#explore`整页删除13项挑战启动器、面板、输入挂载，包括view.ts的`data-learning-start`、`data-explore-learning`，旧aside不留挑战链接。新游戏只通过02顶部“结构挑战”或直接`/games/structure/index.html`进入；“拆解与交互”返回完整3D页。两者替换主内容，不能一起显示。原三步、复习、四步归位和3D自己的控制保留；复习引用canonical对象，不写比赛事件。旧13项规则测试保留，旧learning E2E调整为独立路由/保留功能回归。
+新`source.ts`只读引用原`learning-data.ts`的13主题和分组、`learning-targets.ts`的模型事实。新图示ID与真实模型节点字段分开；不改旧模型映射或评分。原已有文案为唯一知识源，新content只定义图示槽位/边与解释引用。
 
 ## 三张台面与实际操作
 
-在`/games/structure/index.html`独立host内部，HUD显示三组进度/计时，台面是二维教学剖面，辅助小窗也是二维俯视图，右侧为部件卡/提示，底部“试运行”“连接系统关系”。这段左右布局只属于独立2D游戏，绝不与旧3D模型并排。移动端托盘在图下。02两个页面切换按钮位于主内容之外；新页不含explore-workbench/model-canvas/GLB，教程和结果也只在新host。
+在`/games/structure/index.html`独立host内部，按Impeccable规范第4/8节构图：HUD显示三组进度/计时，汽车几何剖面为主体，短证据栏辅助，部件托盘与唯一主操作在图下。这段左右布局只属于独立2D游戏，绝不与旧3D模型并排。移动端托盘在图下。02两个页面切换按钮位于主内容之外；新页不含explore-workbench/model-canvas/GLB，教程和结果也只在新host。
 
 ### 机制 1：看缺失现象，选择部件并安装
 
@@ -94,7 +74,7 @@ source/target 的 graph ID 是 `node-*` 前缀，对应以上 canonical part，p
 
 三组安装 + 连关系的目标操作时间约为动力75秒、支撑75秒、感知90秒，360秒设计默认另外留出反馈阅读和纠错时间；具体可用性需真实儿童测试。第一组完成后主动“下一台”，不自动切走说明；比赛未完成也可看到真实部分结果。最终显示13个主题图示完成状态、3个关系图和一条可选收藏，不追加问答或按表达质量打分。
 
-教程用非正式“台灯电源→灯泡”的二维演示，先完成选件/放槽，再完成选起点/终点/标签；约20秒，不计时/计分、不发 objective facts。开始前只有未计分预览/教程，教程结束再启动练习/比赛 session；主学习操作的有效检查才产生计分事实。共同 `src/ui/arcade/assistant` 从当前 board、错误 ID、hint 次数选择固定台词，不假装理解自由文本。每个局部动画最多600ms，reduced-motion 用静态替代；连对火花只是装饰，不加分。
+教程用非正式“台灯电源→灯泡”的二维演示，先完成选件/放槽，再完成选起点/终点/标签；约20秒，不计时/计分、不发 objective facts。开始前只有未计分预览/教程，教程后返回准备确认，学生显式开始才启动练习/比赛 session；主学习操作的有效检查才产生计分事实。共同 `src/ui/arcade/assistant` 从当前 board、错误 ID、hint 次数选择固定台词，不假装理解自由文本。每个局部动画400–700ms，状态先提交且可略过/重播，reduced-motion 用静态替代；连对火花只是装饰，不加分。
 
 ## 状态机与本地接口
 
@@ -125,12 +105,12 @@ reduceStructureLab(state: StructureLabState, action: StructureLabAction, content
 
 state 包含 config、stage、boardId、installedBySocket、edgesByBoard、selectedPartId/selectedPortId、surface:'dry'|'wet'、feedback、revisionByObjective、lastCheckedRevision、completedObjectiveIds、hintedObjectiveIds、finishReason。总分、时钟、模型状态不在本地 state。actions 为 `start/tutorial-complete`、`select-part {partId}`、`install {socketId,partId}`、`select-port {nodeId}`、`connect {sourceId,targetId,relationId}`、`remove-edge {edgeId}`、`surface {value}`、`check-install`、`check-links`、`hint {objectiveId}`、`continue`、`finish {reason:'completed'|'timeout'|'abandoned'|'interrupted'}`、`reset-practice`。正式 finish/status 和 outcome.finishReason 均使用这四个值。
 
-- check 输出 fact 的边界是一个 semantic objective 的首次有效确认，重复不变检查或 incomplete 检查无 fact、也不递增 revision。空槽/缺边仅提示；已填错功能/错关系才是 incorrect。session.record 内部绑定 runId/seq，草稿 revision 不是运行全局序号。
+- check 输出 fact 的边界是一个 semantic objective 的首次有效确认，重复不变检查或 incomplete 检查无 fact、也不递增 revision。安装空槽仅提示、已填错功能为incorrect。连线图按requiredEdgeCount(动力4/支撑4/感知6)判断是否完整：少于该数时即便有错边也只提示、facts=[]；达到或超过该数时，必须与requiredEdges集合精确相等才correct，否则一次incorrect。未知/重复/跨组边在编辑时拒绝，不进入草稿；合法但多余的边属于完整错图。session.record 内部绑定 runId/seq，草稿 revision 不是运行全局序号。
 - 每个 semantic objective revision 只在有效实质草稿编辑时加一；支撑的 chassis revision 取悬架/brakes 依赖的共同 board revision。已正确确认的悬架/制动依赖件锁定，当前run不存在完成后删除依赖再保留旧确认的路径。
 - 13 项正确安装分别确认；一个完整关系图另确认一次。全部安装正确前不进入 link，全部 required edges 正确前不进入下组。
 - 允许一条 source 多个 target，但禁止完全重复的 `(source,target,relation)` 边；未知端口/类别、同端口自连、跨 board 连线、完成后的编辑无效。
 - 比赛与练习的当前run中，已完成目标一律只读，可回看此前反馈；修改已完成件/关系必须开始全新一轮，不提供单目标 uncompletion 或撤回事实。
-- `reset-practice` 重置整轮而非本组：若旧practice session仍running，先 `session.finish('abandoned')`，再 `createStructureLabState` 清空所有组的目标/件/关系，调用 `session.start(practice config)` 开始零目标新run。旧session已结束时不重复finish；score/elapsedMs继续为null。正式再赛也必须另开新run。
+- `reset-practice` 重置整轮而非本组：若旧practice session仍running，先 `session.finish('abandoned')`，再调用 `session.start(practice config)`；仅ok才用 `createStructureLabState` 重建全轮。start失败保留旧轮只读成果和原因，不清空图也不显示running新局。旧session已结束时不重复finish；score/elapsedMs继续为null。正式再赛也必须另开新run。
 - reducer不读DOM/Three/时间/localStorage；主关卡守卫active+running。hidden禁用输入但继续时钟；新文档导航/pagehide结束正式run，含BFCache；dispose解除监听/订阅，返回ready。
 
 ## 锁定的权重、计分与诚实结果
@@ -147,94 +127,54 @@ state 包含 config、stage、boardId、installedBySocket、edgesByBoard、selec
 
 共同 results 注明“二维教学图示”；每项状态来源 `diagram`，毫米波再标 teaching。不能生成 model evidence 或维修胜任判断；准确展示本轮核验的安装/关系、真实部分结果和实际本机记录。比较只使用上述完整比较键；现场横向比较靠同学展示真实结果屏，公共说明明确各电脑只有自己的历史。
 
-## 文件所有权
+## 文件与任务
 
-| 文件 | 职责 / 修改边界 |
-| --- | --- |
-| Create `src/content/structure-learning.ts` | 原样提取 13 主题、分组和复习唯一对象 |
-| Create `src/content/structure-targets.ts` | 原模型 target 定义，保持名称、kind、hotspot 和组合条件，不放新 diagram 节点 |
-| Create `src/shared/structure-target-rules.ts` | 从原 target 文件提取 `resolveLearningTargetName/hasRequiredTargets` 纯函数 |
-| Modify `src/chapters/explore/learning-data.ts`、`learning-targets.ts` | canonical / shared 兼容 re-export，不复制对象 |
-| Create `src/activities/structure-lab/content.ts` | 13 topic↔socket 任务、3 board 与 3 graph 的规则和 fixed-copy 提示 |
-| Create `src/activities/structure-lab/parts.ts` | 单一 diagram part 定义、功能标签、示意图坐标、对应 source task/target 引用；轮胎只一份定义 |
-| Create `src/activities/structure-lab/state.ts` | 安装/连接纯规则、阶段、revision 与 facts |
-| Create `src/activities/structure-lab/diagram-view.ts` | SVG 剖面、端口、部件/关系 overlay 按钮，消费纯状态 |
-| Create `src/activities/structure-lab/view.ts`、`styles.css` | 页壳、教程、资料、反馈和完成显示 |
-| Create `src/activities/structure-lab/controller.ts` | host scope 输入、pointer/键盘等价、active/dispose、公共 runtime 适配 |
-| Create `src/activities/structure-lab/index.ts` | 只导出view/mount供专用main消费，不注册进旧app runtime |
-| Create `games/structure/index.html`、`src/activities/structure-lab/main.ts` | 独立HTML/专用bootstrap，仅装载共同游戏导航与本游戏host；pagehide含BFCache关闭正式run，pageshow返回ready |
-| Modify `vite.config.ts`（集成代理） | 按新总计划配置index.html与三个games HTML的真实多入口，直接URL可构建/预览 |
-| Modify 原 `explore/controller.ts`、`view.ts`、`learning-view.ts` | GPT-6.1-sol集成代理删除旧13项启动器/面板/挂载以及data-learning-start/data-explore-learning；旧aside不留挑战链接，保留原3步/复习/归位/模型 |
-| Create `tests/unit/structure-lab/content.test.ts`、`state.test.ts`，`tests/e2e/structure-lab.spec.ts` | 图示语义、因果关系、去重、完整真实输入与旧页回归 |
-| Modify `docs/development/explore-content.md` | canonical 内容与图示规则维护；继续保留 GLB 与归位说明 |
+新增`src/activities/structure-lab/{source,parts,content,state,graphics,view,controller,index,main}.ts`和`styles.css`；入口`games/structure/index.html`。source只读旧事实；parts为几何物体定义；content为槽位/真值关系；state为唯一reducer；graphics为可辨物体/端口布局；view保持对象DOM；controller使用公共输入和session。旧文件的迁移/删除按公共UI6A由集成负责人实施，复习/归位的共用learning-view部分不能误删。
 
-`assembly-state.ts`、rig、scene、camera-observation 和原动力故事不因本新页被复制/提取/改造。canonical targets 继续维护原模型事实，新 parts 只引用它们供出处追溯，不拿模型 targetName 当 diagram completion evidence。公共 app/nav/styles import、`src/shared/arcade/{types,session,scoring,storage,challenge-code}.ts`、`src/ui/arcade/{shell,results,assistant,styles}` 归 GPT-6.1-sol 集成代理，本页只消费合同。
+### X1：只读13主题与图示内容
 
-## 实施任务
+**Files:** source/parts/content；`tests/unit/structure-lab/content.test.ts`。
 
-### X1：唯一知识源与 13 项图示映射
+**Interfaces:** `getStructureSource()`返回旧tasks/groups/targets只读引用；`DiagramPart {id,label,functionLabel,sourceTargetKeys,teachingOnly}`；`DiagramObjective {id,boardId,requiredSocketParts,sourceTaskId,weight}`；模型source key与diagram ID分字段。
 
-**Files:** canonical content/targets、shared target rules、旧 export shim、parts/content、`tests/unit/structure-lab/content.test.ts`。
+- [ ] RED：13主题ID恰好覆盖一次、分组4/4/5、轮胎单一定义两场景引用；悬架+Brakes满足底盘、两悬架不满足；13×40+3×160=1000。
+- [ ] RED：毫米波全链标teachingOnly，三图所有端口存在、边带正确方向/语义；diagram证据绝不标model命中。
+- [ ] 跑`npm run test:unit -- tests/unit/structure-lab/content.test.ts`；实现只读adapter与操作内容后跑GREEN及旧explore内容测试，不移动导出或改变旧对象。
 
-**Interfaces:** 旧 `ExploreLearningTask/ExploreTargetDefinition` 与旧 exports 签名不变；新 `DiagramPart { id,label,functionLabel,sourceTargetKeys,teachingOnly }`，`DiagramObjective { id,boardId,requiredSocketParts,sourceTaskId,weight }`。模型名和 diagram ID 使用不同字段。
+### X2：安装与关系reducer
 
-- [ ] RED 测试 `canonical_exports_are_same_objects`；分组 `[4,4,5]`、13 ID 恰好一次；原 review 电池 question 仍 `toBe` 同对象。新 diagram objective 的 `sourceTaskId` 全部存在且一一覆盖 13 task ID，parts 的轮胎只一个定义。
-- [ ] 增加 `chassis_requires_suspension_and_brakes`：原 `hasRequiredTargets` 对两个悬架 false，悬架+Brakes true；新 requiredSocketParts 也要求两种功能。`millimeter_is_always_teaching_and_has_no_model_node`：无新 GLB name，parts/result 元信息 teachingOnly true。
-- [ ] 运行 `npm run test:unit -- tests/unit/structure-lab/content.test.ts`，确认缺失新 exports FAIL。
-- [ ] 移动 canonical 对象与 target pure rules，旧路径 re-export；实现以上 13 表格映射和 3 个 graph 真值表。共享内容无 docs runtime import，不复制原 13 题正文。
-- [ ] 运行新内容测试和 `npm run test:unit -- tests/unit/explore/learning-targets.test.ts tests/unit/explore/learning-state.test.ts`，包括现有真实 GLB 名称检查，确认 PASS。
+**Files:** state；`tests/unit/structure-lab/state.test.ts`、`graph.test.ts`。
 
-### X2：安装诊断、局部重试与阶段推进
+**Interfaces:** 上文createStructureLabState/reduceStructureLab；13安装目标+3图目标；DomainFact使用共享类型，不另定义评分。
 
-**Files:** activity state、`tests/unit/structure-lab/state.test.ts`。
+- [ ] RED：安装空槽facts=[]、填错功能incorrect；连线少于4/4/6条时即便含错边也facts=[]，达到/超过条数而非精确requiredEdges为incorrect；更正只改变未完成草稿；已确认件/边锁定；同revision check无重复fact。
+- [ ] RED：chassis同时检查悬架+制动；支撑轮胎必须看wet；合法source多target可用，自连/重复/跨board/未知边拒绝；主动continue只过一组。
+- [ ] RED：动力图只有1条合法端口但关系错误的边时check返回facts=[]；凑足4条而有错为一次incorrect；改至精确4条requiredEdges为correct且首次资格已失。支撑4/感知6同样；额外合法边需删掉才能成功。重练start失败保留上一轮图/成果，只读显示原因。
+- [ ] 实现唯一领域状态与局部验证，任何动画不推进；试运行处理所有已填安装槽，各目标独立事实，不因一错丢掉其他正确确认。
+- [ ] 跑`npm run test:unit -- tests/unit/structure-lab`，覆盖提示锁、timeout冻结、重练新run；记录GREEN后保存。
 
-**Interfaces:** `evaluateDiagramInstall(boardId, installedBySocket, surface:'dry'|'wet', content): readonly { objectiveId, verdict:'correct'|'incorrect'|'incomplete', wrongSocketIds:readonly string[] }[]`；上文 state/reducer/transition。支撑轮胎还需 surface 为 wet；仅 dry 时属于 incomplete，不发错误 fact。用 canonical objective ID 记录，每项40权重仅供共享评分配置读取，不是本地最终分。
+### X3：三张二维剖面与原位纠错
 
-- [ ] RED 用例 `correct_install_requires_explicit_check`、`wrong_part_keeps_other_valid_installs`、`empty_sockets_do_not_count_as_wrong`、`chassis_needs_two_functions`、`power_wheel_does_not_autocomplete_surface_wheel`；最后一个用例还断言新台面默认 dry、安装后仍 incomplete、切 wet 再 check 才完成。
-- [ ] 运行 `npm run test:unit -- tests/unit/structure-lab/state.test.ts`，观察缺失接口 FAIL。
-- [ ] 实现每板安装/check 状态。check 正确项锁定、错项留待替换、缺项提示；全安装正确才显式进入 link。修复同一项只发一次 correct fact。
-- [ ] 补 `repeated_check_and_unknown_ids_are_noops`、`explicit_hint_targets_only_one_objective`、`timeout_during_install_is_partial_and_frozen`、`completed_objective_is_read_only_in_both_modes`、`practice_restart_starts_new_run_without_stale_objectives`；重练清空全部组而非仅当前板，不生成撤回fact，运行至 PASS。
+**Files:** graphics/view/controller/styles；`tests/e2e/structure-lab-ui.spec.ts`。
 
-### X3：有类型的系统关系与全部完成
+**Interfaces:** view:string/mount(host):ChapterController；消费公共UI1/2，不写第二套选择/取消/拖动。字段安装和边数据来自state，位置来自graphics。
 
-**Files:** content/state、state test。
+- [ ] RED：错装电机槽→文字锚定槽→换一件→试运行；四/四/五组均可辨；感知连线错误→点选只删错边→保留所有正确边→看到真实流向。
+- [ ] RED：全键盘完成16目标、触屏tap/拖线cancel、焦点/手机滚动；同组install→link物体不跳位置，禁用给原因；连线标签不覆盖对象名。
+- [ ] 实现几何剖面、56px优先槽位、关系阶段端口、可选边的宽命中区；错误边用断线+文字，不只红色；400–700ms试运行可略过，reduced-motion有静态顺序。
+- [ ] build后跑本UI E2E并实看动力/支撑/感知/错槽/错边/成功截图，按UI5/UI7门槛修正；不直接灌正确图数据。
 
-**Interfaces:** `evaluateDiagramGraph(boardId, edges, content): { verdict:'correct'|'incorrect'|'incomplete'; wrongEdgeIds:readonly string[]; missingRelationIds:readonly string[] }`；edge 类型 `{id,sourceId,targetId,relationId}`。`getStructureLabOutcome(state, content)` 返回13图示 topic 状态、3 graph 状态、finishReason、`source:'diagram'`，不自行返回学习能力或持久分数。
+### X4：独立文档、真实结果与旧学习保留
 
-- [ ] RED `power_graph_requires_conversion_transmission_and_contact`：battery→wheel 的电能边 wrong；四个必需边 correct。`support_graph_requires_suspension_brakes_and_contact` 和 `perception_graph_requires_five_inputs_then_analysis` 按上述真值表逐边断言。
-- [ ] 增加 `wrong_label_direction_and_cross_board_are_rejected`、`duplicate_edge_does_not_advance_revision`、`missing_edge_is_incomplete`、`same_revision_cannot_emit_second_fact`、`continue_waits_for_whole_group`、`partial_outcome_never_reports_model_find`。
-- [ ] 运行 state test，确认 graph 接口未实现 FAIL。
-- [ ] 实现 connect/remove/check-links 和主动推进；完整 graph 每组只发一次 correct objective fact，该目标权重160，最终分只由共享 scorer计算。支持独立删除错线，不清空已正确安装；最终 result 从 actual state 派生。
-- [ ] 运行 content/state 测试至 PASS，13×40+3×160 的配置和为1000；选项/卡片重排不影响真值。
+**Files:** index/main/HTML及controller集成；`tests/e2e/structure-lab-competition.spec.ts`，开发指南追加双入口说明。
 
-### X4：剖面视图、等价操作与公共比赛适配
+**Interfaces:** 公共session record返回true才提交候选state；控制器不分发旧mission/powerflow/learning/assembly动作；独立bootstrap持有page生命周期。
 
-**Files:** `games/structure/index.html`、activity main/index/diagram-view/view/controller/styles、`tests/e2e/structure-lab.spec.ts`；集成代理配置Vite多入口。main只装载本游戏view/mount与共同导航，顶部href分别为`/games/structure/index.html`、`/index.html#explore`，不注册旧app内部route。
+- [ ] RED：同码同动作假时间同分、record拒绝state不动、hidden继续预算、导航/刷新/BFCache中断且返回准备、双标签不互杀、存储失败结果仍可读。
+- [ ] 实现真实结果：13主题图示状态、3关系图、未完成项，不假称真实GLB装配报告；练习score/elapsedMs=null。
+- [ ] 跑structure/arcade单元、build、新旧explore浏览器路线；**旧13挑战入口和面板已撤出，其知识/纠错覆盖在新页通过**，三任务/复习/归位/开合/分类/灯光/镜头/5秒故事保留。旧学习E2E改为承接覆盖+旧面板不存在+基础功能保留，不能只删除断言。start失败保留旧成果的回归通过。
+- [ ] 无Three/GLB/DAE网络请求，游戏root无旧model-canvas；新旧各在自己文档，不共享运行state。按UI5/UI7记录全尺寸和输入证据，再保存交付。
 
-**Interfaces:** `export const view: string`；`export function mount(host: HTMLElement): ChapterController`；`renderStructureDiagram(host,state,content): void` 只消费判定。controller 由共享 session.ts factory 创建页面拥有的 ArcadeSession，消费共同 shell/results/assistant，subscribe 运行显示，将 facts 一次交 `session.record(facts)`，不创建本地 store。
+## 交付边界
 
-- [ ] 先写 E2E `keyboard_finishes_install_and_all_three_graphs`、`touch_select_install_connect_is_complete`、`feedback_keeps_valid_parts_and_wrong_edge_can_be_repaired`、`guided_and_standard_share_truth_rules`、`millimeter_is_teaching_everywhere`；同时断言 `practice_score_and_elapsed_are_null`、正式finish/status只取四个统一值、`body_copy_is_at_least_18px`。
-- [ ] GPT-6.1-sol 集成代理 route 接入后串行 `npm run build`、`npm run test:e2e -- tests/e2e/structure-lab.spec.ts`，确认旧缺失界面 FAIL 后再实现。
-- [ ] SVG 配 DOM button overlay；每 part/socket/port/edge 有名称、方向、功能说明和 focus。鼠标/触屏可 click-select/place/connect，不强制拖动；Tab、Enter/Space 操作，Escape 取消选中，Delete 或明确“移除此关系”按钮等价删线。目标至少44×44，缩小屏幕也保持可点击尺寸。
-- [ ] 试运行动画消费已确认状态，600ms 内完成，reduced-motion 静态替代；拖放不计错，关系标签用文字+图标，错误使用 role=status。焦点在局部 render 后保留当前件/下一槽。
-- [ ] 接 session.start/record/finish/subscribe/setActive/dispose，scope清理监听/订阅；共同shell/results/assistant显示，不创建第二计时器/store。重练按 finish abandoned（仅旧run仍running）→整轮domain清空→start practice 执行。一般教程无facts，主学习输入守卫active+running。追加 `inactive_and_disposed_input_is_ignored`、`public_timeout_freezes_without_autofill`、`replay_has_new_run_without_duplicate_old_facts`、`practice_restart_finishes_old_run_before_new_start`、`hint_excludes_first_correct_but_keeps_repaired_completion_weight`、`shared_scoring_returns_1000_933_and_992`；重练断言新runId、全部目标零、score/elapsedMs null、旧fact不撤回；分数用共同scorer断言。
-- [ ] 在1440×900、768×1024、390×844运行触屏/键盘与reduced-motion；添加`direct_structure_deep_link_loads_no_3d`：新context直接打开`/games/structure/index.html`，无GLB/旧3D请求、无explore-workbench/model-canvas，游戏教程/HUD/results只在独立host。通过真实UI操作，不直接写状态，运行至PASS。
-- [ ] 添加`pagehide_bfcache_finalizes_interrupted_once`与`pageshow_returns_ready_without_formal_restore`：真实页面导航/BFCache前进后退都不恢复比赛目标，练习也只在当前document保留；单独hidden仍继续时钟，不把visibilitychange误当页面退出。
-
-### X5：旧展厅入口迁移与互不污染回归
-
-**Files:** GPT-6.1-sol 集成代理 协调原 explore controller/view/learning-view 与导航；本计划更新指南和新/旧 E2E 回归。
-
-**Interfaces:** 顶部真实href：/index.html#explore 与 /games/structure/index.html。每次加载独立HTML文档，不切换旧app内部host；view/mount由structure专用main消费，reset不分发旧mission/powerflow/assembly action。
-
-- [ ] 写`old_exhibit_retains_original_three_steps_review_and_assembly`、`new_diagram_runs_when_glb_fails`、`game_reset_never_imports_or_mutates_exhibit_state`、`hidden_continues_clock_but_document_navigation_interrupts`、`refresh_records_interrupted_unranked_and_never_resumes`、`page_exit_finalizes_once`。追加`top_buttons_navigate_to_distinct_html_documents`、`back_forward_returns_ready_without_formal_resume`、`explore_has_no_learning_panel_or_launcher`、`other_game_document_is_not_mounted`；旧3D页断言`[data-learning-start]`和`[data-explore-learning]`不存在。双向按钮点击必须观察真实URL/document导航；前进后退返回ready，另一游戏host根本不在当前文档挂载。旧raycast仍检查真实模型。
-- [ ] 集成代理删除旧view/aside的13项启动器、面板和输入，不留下challenge route链接；只由02顶部子按钮/直接route进入新独立页。保留原3步、复习、四步归位、分类/聚焦/开合/灯光/镜头恢复和5秒故事。新HTML专用host不继承workbench/model-canvas，旧document不含隐藏游戏host。
-- [ ] 更新 `docs/development/explore-content.md`：列出单一 canonical、13 topic/图示/模型目标的区别、三个 graph、档位和正式分含义；保留原真实 GLB 与归位事实限制。
-- [ ] 运行 `npm run test:unit -- tests/unit/explore tests/unit/structure-lab`；GPT-6.1-sol 集成代理 串行运行 `npm run build`、`npm run test:e2e -- tests/e2e/structure-lab.spec.ts tests/e2e/explore-domain.spec.ts tests/e2e/chapters.spec.ts`，以及调整后的旧学习保留功能用例。
-- [ ] 检查新依赖图只指向共享内容/类型/纯规则与 arcade 模块/UI，不加载 old controller/rig/scene/Three。结果每项 source 均 diagram、没有第14个制动任务、没有第二套旧13项运行状态；比较键含活动/challengeCode/profile/contentVersion/scoringVersion/durationMs，刷新中断不排名，记录实际验证输出再交付。
-
-## 交付验收与已锁定的公共依赖
-
-交付先核验真实多页面：02顶部按钮通过href打开`/index.html#explore`或`/games/structure/index.html`，加载独立HTML文档，当前document只有本页host，不是旧app隐藏多页。旧3D无挑战启动器/面板，新URL不加载3D，教程/HUD/results只在新host。再核验原13主题/控制/复习/归位、完整输入/纠错及真实计分；文档导航含BFCache结束正式run，返回ready无恢复。
-
-依赖GPT-6.1-sol集成代理交付Vite多HTML入口/专用bootstrap、共同游戏导航、共享arcade/UI及旧面板迁移；总负责人拥有架构/合同/审查。以新独立科普游戏总计划（含设计）为主合同，[计分工程合同](../../engineering/2026-11-08-science-arcade-scoring.md)保持同权重/公式/接口。hidden继续计时，真实文档导航/pagehide（含BFCache）结束正式run，返回ready无恢复；不复活已删除旧master/spec。
+本版按用户最终授权撤出重复13项挑战/专属逻辑，保留原三任务/复习/归位及基础交互。科学纯数据作为单一来源继续使用，新旧不在同文档挂两工作台。三张剖面要能通过真实输入解释功能关系，不能把radio题改成部件卡即声称游戏化。全部任务尚未实施。
