@@ -19,6 +19,8 @@
 @media print{.lab-header,.lab-footer,.lesson-index,.work-area,.teacher-note,.lesson-next,.import-section,button{display:none!important}.lesson{display:block;padding:0}.report-page{margin:0;padding:0}.evidence-list{display:block}.evidence-run{break-inside:avoid}body{background:white;color:#111}}
 
 /* A classroom task has one active step alongside the observation model. */
+.lab-header-links{display:flex;align-items:center;gap:16px;margin-left:auto;white-space:nowrap;font-size:16px}
+.lab-header-links .portfolio-link{margin-left:0}
 .lesson-workbench{min-width:0;background:var(--paper);border-radius:12px;display:flex;flex-direction:column}
 .lesson-steps{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px;padding:6px;border-bottom:1px solid var(--line)}
 .lesson-steps button{min-height:44px;padding:8px 4px;font-size:16px;border-radius:6px;line-height:1.35}

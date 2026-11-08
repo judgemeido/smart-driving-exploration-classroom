@@ -4,12 +4,12 @@ it('builds seven real links under a deployment base while retaining all gallery 
   const groups = getNavigationGroups('/science/');
   expect(groups).toHaveLength(4);
   expect(groups.flatMap((g) => g.items).map((i) => i.href)).toEqual([
-    '/science/index.html#history',
+    '/science/legacy.html#history',
     '/science/games/history/index.html',
-    '/science/index.html#explore',
+    '/science/legacy.html#explore',
     '/science/games/structure/index.html',
-    '/science/index.html#lidar',
+    '/science/legacy.html#lidar',
     '/science/games/sensor/index.html',
-    '/science/index.html#traffic',
+    '/science/legacy.html#traffic',
   ]);
 });

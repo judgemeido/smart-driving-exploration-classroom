@@ -25,7 +25,7 @@ const safe = (text: string) =>
     (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]!,
   );
 
-root.innerHTML = `<div class="learning-app"><a class="skip-link" href="#lesson-title">跳到当前实验</a><header class="lab-header"><a href="#history/H1" class="lab-brand">${mark}<span>智驾探索课堂</span></a><nav aria-label="学习章节">${sections.map((s) => `<a data-section="${s.id}" href="#${s.id}"><span>${s.number}</span>${s.title}</a>`).join('')}<a href="${base}legacy.html#traffic"><span>04</span>安全上路</a></nav><a class="portfolio-link" href="#report">我的学习记录</a></header><main data-learning-view></main><footer class="lab-footer"><span>智驾探索课堂 · 观察有依据，判断有理由</span><span>功能教学模型 · 可反复尝试</span></footer></div>`;
+root.innerHTML = `<div class="learning-app"><a class="skip-link" href="#lesson-title">跳到当前实验</a><header class="lab-header"><a href="#history/H1" class="lab-brand">${mark}<span>智驾探索课堂</span></a><nav aria-label="学习章节">${sections.map((s) => `<a data-section="${s.id}" href="#${s.id}"><span>${s.number}</span>${s.title}</a>`).join('')}<a href="${base}legacy.html#traffic"><span>04</span>安全上路</a></nav><div class="lab-header-links"><a class="museum-link" href="${base}legacy.html#history">原版展馆</a><a class="portfolio-link" href="#report">我的学习记录</a></div></header><main data-learning-view></main><footer class="lab-footer"><span>智驾探索课堂 · 观察有依据，判断有理由</span><span>功能教学模型 · 可反复尝试</span></footer></div>`;
 const view = root.querySelector<HTMLElement>('[data-learning-view]')!;
 root.querySelector('.skip-link')!.addEventListener('click', (event) => {
   event.preventDefault();

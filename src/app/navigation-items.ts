@@ -18,7 +18,12 @@ export function getNavigationGroups(base: string = import.meta.env.BASE_URL): re
       number: '01',
       title: '发展历史',
       items: [
-        { id: 'history', label: '发展历史展厅', href: siteHref('index.html#history', base), kind: 'gallery' },
+        {
+          id: 'history',
+          label: '发展历史展厅',
+          href: siteHref('legacy.html#history', base),
+          kind: 'gallery',
+        },
         {
           id: 'history-lab',
           label: '进化修复站',
@@ -34,7 +39,7 @@ export function getNavigationGroups(base: string = import.meta.env.BASE_URL): re
         {
           id: 'explore',
           label: '拆解与交互展厅',
-          href: siteHref('index.html#explore', base),
+          href: siteHref('legacy.html#explore', base),
           kind: 'gallery',
         },
         {
@@ -49,7 +54,7 @@ export function getNavigationGroups(base: string = import.meta.env.BASE_URL): re
       number: '03',
       title: '激光雷达',
       items: [
-        { id: 'lidar', label: '感知原理互动展', href: siteHref('index.html#lidar', base), kind: 'gallery' },
+        { id: 'lidar', label: '感知原理互动展', href: siteHref('legacy.html#lidar', base), kind: 'gallery' },
         {
           id: 'sensor-lab',
           label: '回波侦探',
@@ -62,7 +67,12 @@ export function getNavigationGroups(base: string = import.meta.env.BASE_URL): re
       number: '04',
       title: '安全上路',
       items: [
-        { id: 'traffic', label: '道路规则体验', href: siteHref('index.html#traffic', base), kind: 'gallery' },
+        {
+          id: 'traffic',
+          label: '道路规则体验',
+          href: siteHref('legacy.html#traffic', base),
+          kind: 'gallery',
+        },
       ],
     },
   ];
