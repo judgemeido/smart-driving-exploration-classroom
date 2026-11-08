@@ -41,9 +41,12 @@ async function question(page: Page, index: number) {
 }
 
 async function navigate(page: Page, id: string) {
-  if (await page.locator('[data-menu-button]').isVisible()) await page.locator('[data-menu-button]').click();
-  await page.locator(`[data-go="${id}"]`).click();
-  await expect(page.locator(`[data-page="${id}"]`)).toHaveClass(/is-active/);
+  // 01–03 now use another entry. Retain this controller's lifecycle regression via BFCache events.
+  await page.evaluate(
+    (active) =>
+      window.dispatchEvent(new PageTransitionEvent(active ? 'pageshow' : 'pagehide', { persisted: true })),
+    id === 'traffic',
+  );
 }
 
 test('traffic domain completes eight correct answers with manual and timed continuation', async ({
@@ -111,7 +114,7 @@ test('traffic domain keeps wrong answers at zero and completes the original eigh
   await question(page, 0);
 });
 
-test('traffic domain retains remaining feedback and crossing time across chapter and page suspension', async ({
+test('traffic domain retains remaining feedback and crossing time across page suspension', async ({
   page,
 }) => {
   test.setTimeout(120000);

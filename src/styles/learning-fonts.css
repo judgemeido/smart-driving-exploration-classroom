@@ -1,0 +1,2 @@
+/* Prefer locally installed Chinese text faces; all learning content is available offline. */
+@font-face{font-family:'Learning Sans';src:local('Microsoft YaHei'),local('PingFang SC');font-display:swap}

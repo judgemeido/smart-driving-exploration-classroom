@@ -50,9 +50,14 @@ async function openPractice(page: Page) {
   await expect(page.locator('[data-traffic-learning]')).toHaveAttribute('data-mode', 'practice');
 }
 async function navigate(page: Page, id: string) {
-  if (await page.locator('[data-menu-button]').isVisible()) await page.locator('[data-menu-button]').click();
-  await page.locator(`[data-go="${id}"]`).click();
-  await expect(page.locator(`[data-page="${id}"]`)).toHaveClass(/is-active/);
+  // 01–03 now use another entry. Exercise the retained controller's suspension without old chapter UI.
+  await page.evaluate((active) => {
+    Object.defineProperty(document, 'visibilityState', {
+      configurable: true,
+      value: active ? 'visible' : 'hidden',
+    });
+    document.dispatchEvent(new Event('visibilitychange'));
+  }, id === 'traffic');
 }
 
 test('original result opens and closes all eight review cards without duplicating controls', async ({
@@ -119,7 +124,7 @@ test('five practice scenarios require observation, retry, feedback and summary w
   expect(errors).toEqual([]);
 });
 
-test('practice remains across chapter suspension and exit restores the road view without duplicate submissions', async ({
+test('practice remains across visibility suspension and exit restores the road view without duplicate submissions', async ({
   page,
 }) => {
   await openTraffic(page);

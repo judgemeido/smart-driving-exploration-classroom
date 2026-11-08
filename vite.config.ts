@@ -5,6 +5,7 @@ export default defineConfig({
     rollupOptions: {
       input: {
         main: 'index.html',
+        legacy: 'legacy.html',
         history: 'games/history/index.html',
         structure: 'games/structure/index.html',
         sensor: 'games/sensor/index.html',
