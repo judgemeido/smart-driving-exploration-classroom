@@ -12,9 +12,9 @@ export const createSensorExperiment: ExperimentFactory = (host, context) => {
     context.activityId === 'S1'
       ? '依次选择三种设备，比较它们能提供的信息。相同道路，不同信息。'
       : context.activityId === 'S2'
-        ? '先在预测区写下你的判断，再运行测量。试试16m与60m，然后改变角度或加入遮挡。'
+        ? '先选择预测，再运行测量。比较16m与60m，再改变角度或遮挡。'
         : '先保存晴朗、无遮挡的一次测量。之后每次只改天气或遮挡中的一项，再比较证据。';
-  container.append(intro);
+  if (context.activityId === 'S1') container.append(intro);
   const listeners: Array<() => void> = [];
   const sync = () =>
     context.setScene({
@@ -77,17 +77,26 @@ export const createSensorExperiment: ExperimentFactory = (host, context) => {
       li.textContent = text;
       list.append(li);
     }
-    container.append(list);
+    const info = document.createElement('details');
+    info.className = 'lab-secondary-details';
+    const summary = document.createElement('summary');
+    summary.textContent = '三种设备提供什么信息？';
+    info.append(summary, list);
+    container.append(info);
   } else {
+    const dimensions = document.createElement('div');
+    dimensions.className = 'sensor-dimensions';
+    container.append(dimensions);
     const range = (
       label: string,
       key: 'distance' | 'angle',
       min: number,
       max: number,
       unit: string,
-      help: string,
+      _help: string,
     ) => {
-      const field = group(label, help);
+      const field = group(label);
+      dimensions.append(field);
       const input = document.createElement('input');
       input.type = 'range';
       input.className = 'lab-range';
@@ -106,12 +115,8 @@ export const createSensorExperiment: ExperimentFactory = (host, context) => {
     };
     range('目标前表面距离', 'distance', 4, 80, 'm', '沿车辆前进方向的距离；光束偏转时，沿射线的路径会更长。');
     range('光束偏转角', 'angle', -30, 30, '°', '目标宽4m。偏转过大时射线会从旁边经过，读数为空。');
-    const field = group(
-      '环境条件',
-      context.activityId === 'S3'
-        ? '对照时保持距离与角度相同，每次只改变一个条件。'
-        : '遮挡物位于前方8m；只对其后方目标形成遮挡。',
-    );
+    const field = group('环境条件');
+    field.classList.add('sensor-environment');
     const select = document.createElement('select');
     select.className = 'lab-select';
     select.setAttribute('aria-label', '天气');
@@ -137,7 +142,7 @@ export const createSensorExperiment: ExperimentFactory = (host, context) => {
     label.append(checkbox, document.createTextNode(' 加入近处遮挡物（8m）'));
     field.append(label);
   }
-  const display = group('模型显示', '显示开关只改变观看方式，不改变实验读数。');
+  const display = group('模型显示');
   for (const [key, text] of [
     ['showRay', '显示传播路径'],
     ['cutaway', '剖开传感器'],
@@ -155,7 +160,18 @@ export const createSensorExperiment: ExperimentFactory = (host, context) => {
   source.className = 'lab-source';
   source.textContent =
     '原理参考：光脉冲往返时间测距（t = 2d/c）；本页为单束光与平面目标的简化教学模型，天气为定性样例。';
-  container.append(source);
+  const details = document.createElement('details');
+  details.className = 'lab-secondary-details';
+  const summary = document.createElement('summary');
+  summary.textContent = '显示设置与模型原理';
+  const help = document.createElement('p');
+  help.className = 'lab-help';
+  help.textContent =
+    '距离沿车辆前进方向测量；光束偏转后射线路径更长。目标宽4m，偏转过大可能无回波。8m遮挡物只遮住后方目标。对照时固定距离与角度，每次只改变天气或遮挡。显示开关不改变读数。';
+  details.append(summary);
+  if (context.activityId !== 'S1') details.append(intro, help);
+  details.append(display, source);
+  container.append(details);
   host.append(container);
   sync();
   return {

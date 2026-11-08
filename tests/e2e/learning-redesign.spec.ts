@@ -14,17 +14,17 @@ async function runs(page: Page, id: string): Promise<Run[]> {
 }
 async function open(page: Page, route: string) {
   await page.goto(route);
+  await page.getByRole('button', { name: '操作', exact: true }).click();
   await expect(page.locator('[data-experiment-controls]')).toBeVisible();
 }
-async function record(
-  page: Page,
-  id: string,
-  prediction = '我预测保持其他条件不变时，改变这一项会让证据发生可解释的变化。',
-) {
+async function record(page: Page, id: string) {
   const count = (await runs(page, id)).length;
-  await page.locator('[data-prediction]').fill(prediction);
+  await page.getByRole('button', { name: '预测', exact: true }).click();
+  await page.locator('[data-prediction] input[type="radio"]').first().check();
+  await page.getByRole('button', { name: '操作', exact: true }).click();
   await page.locator('[data-run]').click();
   await expect.poll(async () => (await runs(page, id)).length).toBe(count + 1);
+  await page.getByRole('button', { name: '操作', exact: true }).click();
   return (await runs(page, id)).at(-1)!;
 }
 async function range(page: Page, label: string, value: number) {
@@ -58,11 +58,12 @@ for (const [path, id] of [
 test('E2 repairs the diagnosed link and preserves the original evidence', async ({ page }) => {
   await open(page, '/#explore/E2');
   await page.getByLabel('设置链路断点', { exact: true }).selectOption('input');
-  const before = await record(page, 'E2', '输入链路断开时，没有证据不能被理解成道路无人。');
+  const before = await record(page, 'E2');
   expect(before.evidence.metrics.some((x) => x.value.includes('不确定'))).toBe(true);
-  await page.getByLabel('根据证据，选择要修复的一处链路', { exact: true }).selectOption('input');
+  await page.getByRole('button', { name: '修复', exact: true }).click();
+  await page.getByLabel('根据证据选择修复点', { exact: true }).selectOption('input');
   await page.locator('[data-action="repair"]').click();
-  const after = await record(page, 'E2', '只恢复输入链路，相同规则应在行人出现时停车，清空后通行。');
+  const after = await record(page, 'E2');
   expect(after.evidence.metrics.some((x) => x.value.includes('完成：礼让后通行'))).toBe(true);
   expect((await runs(page, 'E2'))[0]).toEqual(before);
   expect(before.draft.fault).toBe('input');
@@ -72,17 +73,17 @@ test('E2 repairs the diagnosed link and preserves the original evidence', async 
 
 test('S2 derives two distances, clears misses and measures the nearer occluder', async ({ page }) => {
   await open(page, '/#lidar/S2');
-  const first = await record(page, 'S2', '16米的往返时间约为107纳秒。');
+  const first = await record(page, 'S2');
   expect(first.evidence.metrics.some((x) => x.value === '106.7 ns')).toBe(true);
   await range(page, '目标前表面距离', 60);
-  const far = await record(page, 'S2', '60米比16米更远，往返时间应增加。');
+  const far = await record(page, 'S2');
   expect(far.evidence.metrics.some((x) => x.value === '400.3 ns')).toBe(true);
   await range(page, '光束偏转角', 20);
-  const miss = await record(page, 'S2', '光束从目标旁边经过时，应没有有效回波读数。');
+  const miss = await record(page, 'S2');
   expect(miss.evidence.metrics.filter((x) => x.value.includes('无有效读数'))).toHaveLength(2);
   await range(page, '光束偏转角', 0);
   await page.getByLabel('加入近处遮挡物（8m）', { exact: true }).check();
-  const blocked = await record(page, 'S2', '最近的遮挡物会先产生回波。');
+  const blocked = await record(page, 'S2');
   expect(blocked.evidence.metrics.some((x) => x.value === '8.00 m')).toBe(true);
   expect((await runs(page, 'S2'))[0]).toEqual(first);
 });
@@ -90,15 +91,19 @@ test('S2 derives two distances, clears misses and measures the nearer occluder',
 test('draft, prediction, explanation and evidence survive reload', async ({ page }) => {
   await open(page, '/#lidar/S3');
   await page.getByRole('combobox', { name: '天气', exact: true }).selectOption('rain');
-  const run = await record(page, 'S3', '轻雨时仍可能测得回波，不能断言传感器失效。');
-  const explanation =
-    '我保持距离和角度相同，仅将晴朗改成轻雨；本次仍有可用回波，因此天气影响需要结合实际证据解释。';
-  await page.locator('[data-explanation]').fill(explanation);
+  const run = await record(page, 'S3');
+  await page.getByRole('button', { name: '发现', exact: true }).click();
+  await page.locator('[data-explanation] input[type="radio"]').first().check();
+  const explanation = await page.locator('[data-explanation] label').first().innerText();
   await page.locator('[data-complete]').click();
   await page.reload();
+  await page.getByRole('button', { name: '操作', exact: true }).click();
   await expect(page.getByRole('combobox', { name: '天气', exact: true })).toHaveValue('rain');
-  await expect(page.locator('[data-prediction]')).toHaveValue(run.prediction);
-  await expect(page.locator('[data-explanation]')).toHaveValue(explanation);
+  await expect(page.locator('[data-prediction] input').first()).toBeChecked();
+  await expect(page.locator('[data-explanation] input').first()).toBeChecked();
+  expect(
+    await page.evaluate((key) => JSON.parse(localStorage.getItem(key)!).records.S3.explanation, storageKey),
+  ).toBe(explanation);
   expect((await runs(page, 'S3'))[0]).toEqual(run);
 });
 
@@ -106,7 +111,10 @@ test('keyboard controls and reduced motion retain the full experiment', async ({
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await open(page, '/#lidar/S2');
   await range(page, '目标前表面距离', 20);
-  await page.locator('[data-prediction]').fill('增加距离后，光往返所需时间随之增加。');
+  await page.getByRole('button', { name: '预测', exact: true }).click();
+  await page.locator('[data-prediction] input').first().focus();
+  await page.keyboard.press('Space');
+  await page.getByRole('button', { name: '操作', exact: true }).click();
   const run = page.locator('[data-run]');
   await run.focus();
   await page.keyboard.press('Enter');
@@ -123,12 +131,7 @@ test('desktop and mobile keep controls and model inside the viewport', async ({ 
     await page.setViewportSize({ width, height: 844 });
     await open(page, '/#lidar/S2');
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBe(true);
-    for (const selector of [
-      '[data-model-stage]',
-      '[data-experiment-controls]',
-      '[data-prediction]',
-      '[data-run]',
-    ]) {
+    for (const selector of ['[data-model-stage]', '[data-experiment-controls]', '[data-run]']) {
       const box = await page.locator(selector).boundingBox();
       expect(box).not.toBeNull();
       expect(box!.x).toBeGreaterThanOrEqual(-1);
@@ -141,7 +144,7 @@ test('WebGL context loss leaves a usable evidence experiment', async ({ page }) 
   await open(page, '/#lidar/S2');
   await page.locator('[data-model-stage] canvas').dispatchEvent('webglcontextlost', { cancelable: true });
   await expect(page.locator('.lab-stage-fallback')).toContainText(/二维|备用/);
-  const run = await record(page, 'S2', '即使三维显示暂时不可用，测距模型仍按相同物理关系产生证据。');
+  const run = await record(page, 'S2');
   expect(run.evidence.metrics.some((x) => x.value === '106.7 ns')).toBe(true);
   await expect(page.locator('[data-evidence]')).toContainText('106.7');
   await page.getByRole('combobox', { name: '天气', exact: true }).selectOption('fog');
@@ -171,8 +174,10 @@ for (const [label, raw] of [
       raw,
     });
     await open(page, '/#lidar/S2');
-    await page.locator('[data-prediction]').fill('这是一份新的预测，原来的无法读取记录必须保留。');
+    await page.getByRole('button', { name: '预测', exact: true }).click();
+    await page.locator('[data-prediction] input').first().check();
     await expect(page.locator('[data-save-status]')).toContainText('保留原数据');
+    await page.getByRole('button', { name: '操作', exact: true }).click();
     await page.locator('[data-run]').click();
     await expect(page.locator('[data-evidence-run]')).toHaveCount(1);
     expect(await page.evaluate((key) => localStorage.getItem(key), storageKey)).toBe(raw);
@@ -190,17 +195,43 @@ test('rapid route changes dispose old model canvases and keep the final controls
     await expect(page).toHaveURL(new RegExp(`#${route}$`));
     await expect(page.locator('[data-model-stage] canvas')).toHaveCount(1);
   }
+  await page.getByRole('button', { name: '操作', exact: true }).click();
   await expect(page.getByRole('combobox', { name: '天气', exact: true })).toBeVisible();
   await record(page, 'S3');
   await expect(page.locator('[data-model-stage] canvas')).toHaveCount(1);
 });
 
 test('explanation and prediction markup render as plain text in evidence and report', async ({ page }) => {
-  await open(page, '/#lidar/S2');
   const text = '<img src=x onerror="window.__unexpectedExecution=true"> 我预测并解释：距离与往返时间成正比。';
-  await record(page, 'S2', text);
-  await page.locator('[data-explanation]').fill(text);
-  await page.locator('[data-complete]').click();
+  await page.addInitScript(
+    ({ storageKey, text }) =>
+      localStorage.setItem(
+        storageKey,
+        JSON.stringify({
+          version: 1,
+          records: {
+            S2: {
+              draft: null,
+              prediction: text,
+              explanation: text,
+              completed: true,
+              runs: [
+                {
+                  id: 'legacy',
+                  draft: null,
+                  scene: { kind: 'sensor' },
+                  prediction: text,
+                  evidence: { title: '旧观察', summary: '保留的记录', metrics: [], notes: [], valid: true },
+                },
+              ],
+            },
+          },
+        }),
+      ),
+    { storageKey, text },
+  );
+  await open(page, '/#lidar/S2');
+  await page.getByRole('button', { name: '证据', exact: true }).click();
   await expect(page.locator('[data-evidence]')).toContainText(text);
   await expect(page.locator('[data-evidence] img')).toHaveCount(0);
   await page.goto('/#report');
@@ -212,7 +243,7 @@ test('explanation and prediction markup render as plain text in evidence and rep
 test('H2 disconnecting transmission keeps motor running and stops the wheels', async ({ page }) => {
   await open(page, '/#history/H2');
   await page.getByLabel('连接传动机构', { exact: true }).uncheck();
-  const run = await record(page, 'H2', '断开传动后，电机仍有供能，但无法带动车轮。');
+  const run = await record(page, 'H2');
   expect(run.evidence.metrics).toEqual(
     expect.arrayContaining([
       { label: '电机', value: '转动' },
@@ -234,16 +265,17 @@ test('S1 compares device information without treating range sensors as lamp colo
     ['lidar', '距离与轮廓'],
   ]) {
     await sensor.selectOption(value);
-    const run = await record(page, 'S1', `我预测${value}提供的信息有其范围，需要与其他设备互补。`);
+    const run = await record(page, 'S1');
     expect(run.evidence.metrics.some((x) => x.value === info)).toBe(true);
     if (value !== 'camera')
       expect((run.evidence as Run['evidence'] & { notes: string[] }).notes.join('')).toContain('不直接读');
   }
-  await expect(page.locator('[data-evidence-run]')).toHaveCount(3);
+  expect(await runs(page, 'S1')).toHaveLength(3);
 });
 
 test('E2 keyboard inspection preserves focus through each evidence step', async ({ page }) => {
   await open(page, '/#explore/E2');
+  await page.getByRole('button', { name: '链路检查', exact: true }).click();
   for (const label of ['检查下一环：输入', '检查下一环：计算', '检查下一环：执行']) {
     const button = page.locator('[data-action="step"]');
     await expect(button).toHaveText(label);
@@ -256,8 +288,11 @@ test('E2 keyboard inspection preserves focus through each evidence step', async 
 
 test('Q1 locks first answers and saves an explicit review correction separately', async ({ page }) => {
   await page.goto('/#knowledge/Q1');
-  await expect(page.locator('.knowledge-question')).toHaveCount(3);
-  for (let i = 0; i < 3; i++) await page.locator(`#knowledge-Q1-${i}-0`).check();
+  await expect(page.locator('.knowledge-question')).toHaveCount(1);
+  for (let i = 0; i < 3; i++) {
+    await page.getByRole('button', { name: new RegExp(`第${i + 1}题 ·`) }).click();
+    await page.locator(`#knowledge-Q1-${i}-0`).check();
+  }
   await expect(page.locator('.knowledge-explanation')).toHaveCount(0);
   await page.getByRole('button', { name: '提交首次作答', exact: true }).click();
   await expect(page.locator('.knowledge-result')).toContainText('0 / 3');
@@ -266,16 +301,16 @@ test('Q1 locks first answers and saves an explicit review correction separately'
     () => JSON.parse(localStorage.getItem('science-learning:knowledge:v1')!).records.Q1.submitted,
   );
   await page.getByRole('button', { name: '主动查看讲评', exact: true }).click();
-  await expect(page.locator('.knowledge-explanation')).toHaveCount(3);
-  const correction = '原先只看到车轮不转；讲评提示我比较电机是否在转，才能区分供能和传动故障。';
-  await page.locator('#knowledge-correction').fill(correction);
+  await expect(page.locator('.knowledge-explanation')).toHaveCount(1);
+  await page.getByRole('button', { name: /第1题 ·/ }).click();
+  await page.locator('#knowledge-correction').selectOption('1');
   await page.reload();
-  await expect(page.locator('#knowledge-correction')).toHaveValue(correction);
+  await expect(page.locator('#knowledge-correction')).toHaveValue('1');
   const saved = await page.evaluate(
     () => JSON.parse(localStorage.getItem('science-learning:knowledge:v1')!).records.Q1,
   );
   expect(saved.submitted).toEqual(snapshot);
-  expect(saved.correction).toBe(correction);
+  expect(saved.correctionChoices).toEqual([1, null, null]);
   expect(saved.reviewed).toBe(true);
 });
 
@@ -288,11 +323,15 @@ test('Q2 restores an unsubmitted answer draft and grades physically grounded mea
   await expect(page.getByRole('radio', { name: '摄像头', exact: true })).toBeChecked();
   await expect(page.getByRole('button', { name: '提交首次作答', exact: true })).toBeVisible();
   await expect(page.locator('.knowledge-explanation')).toHaveCount(0);
+  await page.getByRole('button', { name: /第2题 ·/ }).click();
   await page.getByRole('radio', { name: '约翻倍，从106.7 ns到213.5 ns', exact: true }).check();
+  await page.getByRole('button', { name: /第3题 ·/ }).click();
   await page.getByRole('radio', { name: '不可以，目标状态未知，需要更多可靠证据', exact: true }).check();
   await page.getByRole('button', { name: '提交首次作答', exact: true }).click();
   await expect(page.locator('.knowledge-result')).toContainText('3 / 3');
   await page.getByRole('button', { name: '主动查看讲评', exact: true }).click();
-  await expect(page.locator('.knowledge-explanation').nth(1)).toContainText('t = 2d/c');
-  await expect(page.locator('.knowledge-explanation').nth(2)).toContainText('信号不足不等于目标不存在');
+  await page.getByRole('button', { name: /第2题 ·/ }).click();
+  await expect(page.locator('.knowledge-explanation')).toContainText('t = 2d/c');
+  await page.getByRole('button', { name: /第3题 ·/ }).click();
+  await expect(page.locator('.knowledge-explanation')).toContainText('信号不足不等于目标不存在');
 });

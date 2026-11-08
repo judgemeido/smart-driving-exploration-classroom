@@ -33,4 +33,31 @@ describe('knowledge exchange records', () => {
     const data = { version: 1, records: { Q2: { ...r, submitted: { ...r.submitted, score: 99 } } } };
     expect(restoreKnowledge(JSON.stringify(data)).protected).toBe(true);
   });
+  it('restores click corrections without replacing legacy text or the first result', () => {
+    let record = freshKnowledge();
+    [1, 2, 1].forEach((answer, index) => {
+      record = updateAnswer(record, index, answer);
+    });
+    record = {
+      ...submitKnowledge('Q1', record),
+      reviewed: true,
+      correction: '原有修正',
+      correctionChoices: [1, null, 0],
+    };
+    const raw = JSON.stringify({ version: 1, records: { Q1: record } });
+    const restored = restoreKnowledge(raw);
+    expect(restored.protected).toBe(false);
+    expect(restored.data.records.Q1).toEqual(record);
+    expect(restored.data.records.Q1.submitted?.score).toBe(3);
+    for (const correctionChoices of [[1, 4, null], [1], ['1', null, null]]) {
+      expect(
+        restoreKnowledge(JSON.stringify({ version: 1, records: { Q1: { ...record, correctionChoices } } }))
+          .protected,
+      ).toBe(true);
+    }
+    expect(
+      restoreKnowledge(JSON.stringify({ version: 1, records: { Q1: { ...record, reviewed: false } } }))
+        .protected,
+    ).toBe(true);
+  });
 });

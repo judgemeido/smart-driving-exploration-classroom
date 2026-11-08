@@ -24,6 +24,7 @@ export function mountKnowledge(host: HTMLElement, id: KnowledgeId): { dispose():
     : unavailable
       ? '无法访问本机存储，本轮尚未保存。请导出本轮。'
       : '草稿保存在当前浏览器；提交后保留首次结果。';
+  let currentQuestion = 0;
   const abort = new AbortController();
   const root = document.createElement('section');
   root.className = 'knowledge-page';
@@ -60,10 +61,28 @@ export function mountKnowledge(host: HTMLElement, id: KnowledgeId): { dispose():
     const status = text('p', message, 'knowledge-status');
     status.setAttribute('role', 'status');
     root.append(status);
+    const progress = document.createElement('nav');
+    progress.className = 'knowledge-progress';
+    progress.setAttribute('aria-label', '题目导航');
+    knowledgeQuestions[id].forEach((_, index) => {
+      const step = button(
+        '第' + (index + 1) + '题' + (record.answers[index] === null ? ' · 待选择' : ' · 已选择'),
+        () => {
+          currentQuestion = index;
+          render('knowledge-question-title');
+        },
+      );
+      step.setAttribute('aria-current', index === currentQuestion ? 'step' : 'false');
+      progress.append(step);
+    });
+    root.append(progress);
     knowledgeQuestions[id].forEach((q, i) => {
+      if (i !== currentQuestion) return;
       const field = document.createElement('fieldset');
       field.className = 'knowledge-question';
       const legend = document.createElement('legend');
+      legend.id = 'knowledge-question-title';
+      legend.tabIndex = -1;
       legend.textContent = `${i + 1}. ${q.prompt}`;
       field.append(legend);
       q.options.forEach((label, a) => {
@@ -82,6 +101,7 @@ export function mountKnowledge(host: HTMLElement, id: KnowledgeId): { dispose():
             record = updateAnswer(record, i, a);
             persist();
             status.textContent = message;
+            progress.children[i].textContent = '第' + (i + 1) + '题 · 已选择';
           },
           { signal: abort.signal },
         );
@@ -96,15 +116,27 @@ export function mountKnowledge(host: HTMLElement, id: KnowledgeId): { dispose():
     });
     const actions = document.createElement('div');
     actions.className = 'knowledge-actions';
+    if (currentQuestion > 0)
+      actions.append(
+        button('上一题', () => {
+          currentQuestion--;
+          render('knowledge-question-title');
+        }),
+      );
+    if (currentQuestion < 2)
+      actions.append(
+        button('下一题', () => {
+          currentQuestion++;
+          render('knowledge-question-title');
+        }),
+      );
     if (!record.submitted) {
       const submit = button('提交首次作答', () => {
         if (record.answers.some((a) => a === null)) {
           status.textContent = '还有题目未选择。请完成3题后再提交。';
-          root
-            .querySelector<HTMLInputElement>(
-              `input[name="knowledge-${id}-${record.answers.findIndex((a) => a === null)}"]`,
-            )
-            ?.focus();
+          currentQuestion = record.answers.findIndex((a) => a === null);
+          render('knowledge-question-title');
+          root.querySelector('.knowledge-status')!.textContent = '还有题目未选择。请完成3题后再提交。';
           return;
         }
         record = submitKnowledge(id, record);
@@ -129,19 +161,33 @@ export function mountKnowledge(host: HTMLElement, id: KnowledgeId): { dispose():
         review.id = 'knowledge-review';
         actions.append(review);
       } else {
+        const q = knowledgeQuestions[id][currentQuestion];
         const label = document.createElement('label');
         label.className = 'knowledge-correction';
         label.htmlFor = 'knowledge-correction';
-        label.append(text('span', '讲评后的修正：哪条证据改变了你的想法？（独立保存，不改首次成绩）'));
-        const correction = document.createElement('textarea');
+        label.append(text('span', '讲评后，我采用哪条判断？（独立保存，不改首次成绩）'));
+        const correction = document.createElement('select');
         correction.id = 'knowledge-correction';
-        correction.rows = 4;
-        correction.maxLength = 2000;
-        correction.value = record.correction;
+        const placeholder = document.createElement('option');
+        placeholder.value = '';
+        placeholder.textContent = '请选择本题的修正判断';
+        correction.append(placeholder);
+        q.options.forEach((option, index) => {
+          const item = document.createElement('option');
+          item.value = String(index);
+          item.textContent = option;
+          correction.append(item);
+        });
+        correction.value =
+          record.correctionChoices?.[currentQuestion] == null
+            ? ''
+            : String(record.correctionChoices[currentQuestion]);
         correction.addEventListener(
-          'input',
+          'change',
           () => {
-            record = { ...record, correction: correction.value };
+            const choices = [...(record.correctionChoices ?? [null, null, null])];
+            choices[currentQuestion] = correction.value === '' ? null : Number(correction.value);
+            record = { ...record, correctionChoices: choices };
             persist();
             status.textContent = message;
           },
@@ -149,6 +195,12 @@ export function mountKnowledge(host: HTMLElement, id: KnowledgeId): { dispose():
         );
         label.append(correction);
         root.append(label);
+        if (record.correction) {
+          const legacy = document.createElement('details');
+          legacy.className = 'knowledge-legacy';
+          legacy.append(text('summary', '查看原有文字修正（只读）'), text('p', record.correction));
+          root.append(legacy);
+        }
       }
     }
     actions.append(

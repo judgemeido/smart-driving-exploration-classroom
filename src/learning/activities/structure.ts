@@ -7,6 +7,7 @@ export const createStructureExperiment: ExperimentFactory = (host, context) => {
     context.initialDraft ?? (isChain ? { exploded: true, cutaway: true } : null),
   );
   let repairNote = '';
+  let phase: 'conditions' | 'inspection' | 'repair' = 'conditions';
   const abort = new AbortController();
   const faultLabels: Record<Fault, string> = {
     none: '全部连通',
@@ -52,40 +53,54 @@ export const createStructureExperiment: ExperimentFactory = (host, context) => {
       active instanceof HTMLElement && host.contains(active)
         ? {
             field: active.dataset.field,
+            phase: active.dataset.phase,
             action: active.dataset.action,
-            summary: active.tagName === 'SUMMARY',
+            summary: active.tagName === 'SUMMARY' ? active.parentElement?.dataset.detail : undefined,
           }
         : null;
-    const detailsOpen = host.querySelector<HTMLDetailsElement>('details')?.open ?? false;
+    const openDetails = new Set(
+      Array.from(host.querySelectorAll<HTMLDetailsElement>('details[open]')).map(
+        (detail) => detail.dataset.detail,
+      ),
+    );
     const partsMarkup = `<div class="lab-control-group">
       <label class="lab-label" for="structure-part">定位部件</label>
       <select class="lab-select" id="structure-part" data-field="selected">${Object.entries(parts)
         .map(([key, label]) => option(key, label, state.selected))
         .join('')}</select>
-      <p class="lab-help">模型高亮选中的部件。选择名称，再追踪它和其他部件的连接。</p>
       <div class="lab-options">${checkbox('exploded', '分层展开', state.exploded)}${checkbox('cutaway', '打开壳体 / 剖切观察', state.cutaway)}</div>
-      <p class="lab-note">壳体开合只改变观察方式，不切断电源或传动。</p>
       <div class="lab-options">${checkbox('power', '接通电源', state.power)}${checkbox('transmission', '接通传动', state.transmission)}</div>
       <p class="lab-source">${inspectPart(state.selected, state.power, state.transmission)}</p>
     </div>`;
     host.innerHTML = isChain
-      ? `${chainMarkup()}<details${detailsOpen ? ' open' : ''}><summary class="lab-label">查看部件与供能（选做）</summary>${partsMarkup}</details>`
-      : `${partsMarkup}<div class="lab-note"><strong>追踪两条路径</strong><p>能量：电池 → 电机 → 传动 → 车轮。</p><p>信息：传感器 → 计算单元 → 电机 / 制动。</p><p>试着只断开传动，观察“电机有动力”和“车轮能前进”的区别。</p></div>`;
+      ? `${chainMarkup()}<details data-detail="parts"><summary class="lab-label">查看部件与供能（选做）</summary>${partsMarkup}</details>`
+      : `${partsMarkup}<details class="lab-secondary-details" data-detail="paths"><summary>追踪路径与模型说明</summary><div class="lab-note"><strong>追踪两条路径</strong><p>能量：电池 → 电机 → 传动 → 车轮。</p><p>信息：传感器 → 计算单元 → 电机 / 制动。</p><p>试着只断开传动，观察“电机有动力”和“车轮能前进”的区别。</p><p>壳体开合只改变观察方式，不切断电源或传动。</p></div></details>`;
+    host.querySelectorAll<HTMLDetailsElement>('details').forEach((detail) => {
+      detail.open = openDetails.has(detail.dataset.detail);
+    });
     if (focused) {
-      const controls = Array.from(host.querySelectorAll<HTMLElement>('[data-field], [data-action], summary'));
+      const controls = Array.from(
+        host.querySelectorAll<HTMLElement>('[data-field], [data-action], [data-phase], summary'),
+      );
       const replacement = controls.find((control) =>
-        focused.field
-          ? control.dataset.field === focused.field
-          : focused.action
-            ? control.dataset.action === focused.action
-            : focused.summary && control.tagName === 'SUMMARY',
+        focused.phase
+          ? control.dataset.phase === focused.phase
+          : focused.field
+            ? control.dataset.field === focused.field
+            : focused.action
+              ? control.dataset.action === focused.action
+              : focused.summary &&
+                control.tagName === 'SUMMARY' &&
+                control.parentElement?.dataset.detail === focused.summary,
       );
       // A successful repair temporarily disables its button until the next check.
       // Keep the keyboard at the next useful action rather than on the document body.
       const destination =
-        replacement instanceof HTMLButtonElement && replacement.disabled
+        replacement instanceof HTMLButtonElement && (replacement.disabled || replacement.closest('[hidden]'))
           ? host.querySelector<HTMLElement>('[data-action="step"]')
-          : replacement;
+          : (replacement ??
+            host.querySelector<HTMLElement>('[data-action="step"]') ??
+            host.querySelector<HTMLElement>(`[data-phase="${phase}"]`));
       destination?.focus({ preventScroll: true });
     }
     scene();
@@ -94,19 +109,22 @@ export const createStructureExperiment: ExperimentFactory = (host, context) => {
     const result = runChain(state);
     const stages = ['准备检查', '已检查输入', '已检查计算', '已检查执行'];
     return `<div class="lab-control-group">
-      <p class="lab-label">两帧验证任务：先礼让，再通行</p>
-      <p class="lab-help">相同场景依次出现“行人经过 → 检测区域清空”。控制器只能读取传感证据。成功需要第一帧停车、第二帧通行。</p>
+<div class="lab-options structure-phases" role="group" aria-label="链路实验步骤">${(['conditions', 'inspection', 'repair'] as const).map((value, i) => `<button type="button" class="lab-inline-action" data-phase="${value}" aria-pressed="${phase === value}">${['条件', '链路检查', '修复'][i]}</button>`).join('')}</div>
+      <section${phase === 'conditions' ? '' : ' hidden'}>
       <label class="lab-label" for="structure-fault">设置链路断点</label>
       <select class="lab-select" id="structure-fault" data-field="fault">${(Object.keys(faultLabels) as Fault[]).map((k) => option(k, faultLabels[k], state.fault)).join('')}</select>
       <label class="lab-label" for="structure-rule">控制规则</label>
       <select class="lab-select" id="structure-rule" data-field="rule">${option('yield', '有行人或证据不明时停车；确认清空后通行', state.rule)}${option('park', '始终停车', state.rule)}${option('always-go', '始终通行（错误规则对照）', state.rule)}</select>
-      <p class="lab-help">断开输入：没有证据。断开计算：不产生命令。断开执行：命令无法落实。车辆初始静止；无执行反馈不能当作已验证的制动。</p>
+      </section><section${phase === 'inspection' ? '' : ' hidden'}>
       <div class="lab-options"><button type="button" class="lab-inline-action" data-action="step">${state.step < 3 ? `检查下一环：${['输入', '计算', '执行'][state.step]}` : '从输入重新检查'}</button><span role="status">${stages[state.step]}</span></div>
-      <div class="lab-list">${result.frames.map((f, i) => `<div class="lab-row"><strong>第 ${i + 1} 帧</strong><p>传感证据：${state.step >= 1 ? word(f.evidence) : '尚未检查'}</p><p>计算命令：${state.step >= 2 ? word(f.command) : '尚未检查'}</p><p>执行反馈：${state.step >= 3 ? word(f.execution) : '尚未检查'}</p></div>`).join('')}</div>
-      <label class="lab-label" for="structure-diagnosis">根据证据，选择要修复的一处链路</label>
+      <table class="structure-frame-table"><caption>两帧证据</caption><thead><tr><th scope="col">场景</th><th scope="col">输入</th><th scope="col">计算</th><th scope="col">执行</th></tr></thead><tbody>${result.frames.map((f, i) => `<tr><th scope="row">${i === 0 ? '行人' : '清空'}</th><td>${state.step >= 1 ? word(f.evidence) : '待检查'}</td><td>${state.step >= 2 ? word(f.command) : '待检查'}</td><td>${state.step >= 3 ? word(f.execution) : '待检查'}</td></tr>`).join('')}</tbody></table>
+      </section><section${phase === 'repair' ? '' : ' hidden'}>
+      <label class="lab-label" for="structure-diagnosis">根据证据选择修复点</label>
       <select class="lab-select" id="structure-diagnosis" data-field="diagnosis">${option('none', '先选择诊断', state.diagnosis)}${(['input', 'compute', 'actuator'] as Fault[]).map((k) => option(k, faultLabels[k], state.diagnosis)).join('')}</select>
-      <button type="button" class="lab-inline-action" data-action="repair"${state.diagnosis === 'none' || state.step < 3 ? ' disabled' : ''}>只修复这一处，再用相同两帧重测</button>
-      <p class="lab-note" role="status">${repairNote || '先检查三环证据，再选择修复点。修复保留场景、控制规则、电源与传动条件。点击页面“运行”记录完整两帧证据。'}</p>
+      <button type="button" class="lab-inline-action" data-action="repair"${state.diagnosis === 'none' || state.step < 3 ? ' disabled' : ''}>修复所选链路，再重测</button>
+      <p class="lab-note" role="status">${repairNote || '检查三环后选择修复点；运行可记录完整证据。'}</p>
+      </section>
+      <details class="lab-secondary-details" data-detail="fault-notes"><summary>断点与验证说明</summary><p class="lab-help">断开输入：没有证据。断开计算：不产生命令。断开执行：命令无法落实。车辆初始静止；无执行反馈不能当作已验证的制动。修复保留场景、规则、电源与传动条件。</p></details>
     </div>`;
   }
   function changed(reset = true) {
@@ -133,6 +151,12 @@ export const createStructureExperiment: ExperimentFactory = (host, context) => {
     (event) => {
       const target = event.target;
       if (!(target instanceof HTMLElement)) return;
+      const phaseButton = target.closest<HTMLButtonElement>('button[data-phase]');
+      if (phaseButton) {
+        phase = phaseButton.dataset.phase as typeof phase;
+        render();
+        return;
+      }
       const action = target.closest<HTMLButtonElement>('button[data-action]')?.dataset.action;
       if (action === 'step') {
         state.step = (state.step + 1) % 4;
@@ -140,6 +164,7 @@ export const createStructureExperiment: ExperimentFactory = (host, context) => {
       }
       if (action === 'repair' && state.step === 3 && state.diagnosis !== 'none') {
         if (state.fault === state.diagnosis) state.fault = 'none';
+        phase = 'inspection';
         repairNote = `已检查并接通${faultLabels[state.diagnosis]}。请重测，看证据链是否恢复；若输出仍缺失，重新诊断。`;
         changed();
       }
@@ -171,6 +196,7 @@ export const createStructureExperiment: ExperimentFactory = (host, context) => {
           valid: true,
         };
       state.step = 3;
+      phase = 'inspection';
       render();
       context.onChange();
       const result = runChain(state);

@@ -12,8 +12,8 @@ export const activities: ActivityDefinition[] = [
     question: '汽车的变化，解决了什么问题？',
     instruction: '读一条史料，调整时间顺序，再用证据解释一次变化。',
     teacher: '技术不是突然出现的。研究、示范和走入日常生活，分别需要不同证据。先听老师讲解，再打开档案核对。',
-    predictionPrompt: '哪一项变化应该先发生？为什么？',
-    transfer: '如果要让一项新技术进入校园，你会先验证什么？',
+    predictionPrompt: '科研探索和道路示范，谁先出现？',
+    transfer: '哪条发现得到这些史料的支持？',
   },
   {
     id: 'H2',
@@ -24,7 +24,7 @@ export const activities: ActivityDefinition[] = [
     teacher:
       '电池提供能量，电机把电能转成机械运动，传动机构将运动传给车轮。这里是没有惯性的功能台架，不是整车制动仿真。',
     predictionPrompt: '断开传动后，电机和车轮会怎样？',
-    transfer: '如果车轮不动，你会先检查哪两处？',
+    transfer: '你记录的电机与车轮状态，支持哪条发现？',
   },
   {
     id: 'E1',
@@ -34,7 +34,7 @@ export const activities: ActivityDefinition[] = [
     instruction: '选择部件，展开工作层，用模型和说明寻找它的作用。',
     teacher: '拆开外壳是为了观察；它不等于切断供电或信号。通过部件列表和分层按钮，找到能量与信息经过的位置。',
     predictionPrompt: '负责获取信息和负责让车停下的，是同一个部件吗？',
-    transfer: '选两个部件，解释它们怎样合作。',
+    transfer: '哪条发现描述了你观察到的部件协作？',
   },
   {
     id: 'E2',
@@ -45,7 +45,7 @@ export const activities: ActivityDefinition[] = [
     teacher:
       '传感器提供观测，计算系统产生指令，执行机构完成动作。知道危险、发出指令、实际停车是三件不同的事。',
     predictionPrompt: '你认为断点在输入、判断还是执行？',
-    transfer: '换成输入缺失时，车辆可以把“没看到”当成“没有人”吗？',
+    transfer: '这次两帧证据，支持哪条发现？',
   },
   {
     id: 'S1',
@@ -56,7 +56,7 @@ export const activities: ActivityDefinition[] = [
     teacher:
       '摄像头记录图像，毫米波雷达测量距离和相对运动，激光雷达获得距离与空间轮廓。原始信号还需要处理，设备不能各自包办全部判断。',
     predictionPrompt: '哪个设备能提供信号灯颜色的图像线索？',
-    transfer: '如果图像被遮住，只剩距离信息，能直接决定通行吗？',
+    transfer: '你选择的设备，能提供哪些线索？',
   },
   {
     id: 'S2',
@@ -67,7 +67,7 @@ export const activities: ActivityDefinition[] = [
     teacher:
       '光走到目标再返回，路程是单程距离的两倍。距离 = 光速 × 往返时间 ÷ 2。画面是按米构建的示意场景，相机变化不会改变测量。',
     predictionPrompt: '16米和32米目标，哪一次回波更晚？大约晚多少？',
-    transfer: '加入近处遮挡后，第一束回波来自哪里？',
+    transfer: '这次的距离、时间或空读数，支持哪条发现？',
   },
   {
     id: 'S3',
@@ -78,6 +78,6 @@ export const activities: ActivityDefinition[] = [
     teacher:
       '天气影响与设备、目标和条件有关。这里使用可重复的定性教学样例；轻雨不意味着所有设备失效，信息不足也不等于道路清空。',
     predictionPrompt: '浓雾下信息不足时，你还需要什么证据？',
-    transfer: '设计一个只改变一个条件的对照实验。',
+    transfer: '你的天气或遮挡对照，支持哪条发现？',
   },
 ];

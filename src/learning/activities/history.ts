@@ -73,29 +73,40 @@ export const createHistoryExperiment: ExperimentFactory = (host, context) => {
     wrapper.append(input, document.createTextNode(label));
     root.append(wrapper);
   };
+  const archiveDetail = element('div');
   if (history) {
-    root.append(
-      element('h3', '把进化档案按证据排好', 'lab-label'),
-      element(
-        'p',
-        '先读年代与正文，再调整顺序。时间先后不能单独证明因果：还要解释人们的需要与技术变化如何联系。',
-        'lab-help',
-      ),
-    );
-    const list = element('ol', '', 'lab-list');
+    const list = element('ol', '', 'lab-list history-browser');
+    let selectedCard = draft.order[0];
+    const browseLabel = element('label', '查看档案与位置', 'lab-label');
+    const browse = element('select', '', 'lab-select history-position');
+    browseLabel.append(browse);
+    browse.addEventListener('change', () => {
+      selectedCard = browse.value;
+      renderCards();
+    });
+    root.append(browseLabel);
     const feedback = element('p', '', 'lab-note');
     feedback.setAttribute('role', 'status');
     const renderCards = (focusId?: string, focusDirection?: number) => {
       list.replaceChildren();
+      browse.replaceChildren();
       draft.order.forEach((id, index) => {
+        const card = historyCards.find((item) => item.id === id)!;
+        const option = element('option', `${index + 1}. ${card.year} · ${card.label}`);
+        option.value = id;
+        browse.append(option);
+      });
+      if (focusId) selectedCard = focusId;
+      browse.value = selectedCard;
+      draft.order.forEach((id, index) => {
+        if (id !== selectedCard) return;
         const card = historyCards.find((item) => item.id === id)!;
         const exhibit = historyExhibits.find((item) => item.id === card.sourceExhibitId)!;
         const row = element('li', '', 'lab-row');
-        const firstSentence = exhibit.detail.match(/^.*?[。！？]/)?.[0] ?? exhibit.detail;
-        row.append(element('h4', `${card.year} · ${card.label}`), element('p', firstSentence, 'lab-help'));
-        const details = element('details');
+        row.value = index + 1;
+        const details = element('div');
         details.append(
-          element('summary', '展开史料与来源', 'lab-source'),
+          element('h4', `${card.year} · ${card.label}`),
           element('p', exhibit.detail, 'lab-help'),
           element('p', exhibit.story, 'lab-help'),
         );
@@ -123,7 +134,7 @@ export const createHistoryExperiment: ExperimentFactory = (host, context) => {
         for (const direction of [-1, 1] as const) {
           const control = button(direction === -1 ? '上移' : '下移', () => {
             draft.order = moveHistoryCard(draft.order, index, direction);
-            feedback.textContent = '顺序已调整，可以再次核对相邻史料。';
+            feedback.textContent = '已调整顺序。';
             renderCards(id, direction);
             changed();
           });
@@ -136,34 +147,54 @@ export const createHistoryExperiment: ExperimentFactory = (host, context) => {
               else row.querySelector<HTMLButtonElement>('button:not(:disabled)')?.focus();
             });
         }
-        row.append(details);
+        archiveDetail.replaceChildren(details);
         list.append(row);
       });
     };
     renderCards();
-    root.append(
-      list,
-      button('核对相邻史料', () => {
-        const result = checkHistoryOrder(draft.order);
-        feedback.textContent = result.conflicts.length
-          ? result.conflicts.join('；')
-          : '相邻年代都从早到晚。再用具体事件解释：科研、示范、感知和补能如何回应不同需要？';
-      }),
-      feedback,
-    );
-    const label = element('label', '我的史料推理：哪项变化回应了什么需要？请引用一张卡片。', 'lab-label');
-    const reasoning = element('textarea', '', 'lab-select');
-    reasoning.value = draft.reasoning;
-    reasoning.maxLength = 1000;
-    reasoning.rows = 4;
+    const check = button('核对顺序', () => {
+      const result = checkHistoryOrder(draft.order);
+      feedback.textContent = result.conflicts.length
+        ? result.conflicts.join('；')
+        : '相邻年代都从早到晚。再用具体事件解释：科研、示范、感知和补能如何回应不同需要？';
+    });
+    const actions = element('div', '', 'history-actions');
+    actions.append(list, check);
+    root.append(actions, feedback);
+    const label = element('label', '史料推理', 'lab-label');
+    const reasoning = element('select', '', 'lab-select');
+    const placeholder = element('option', '请选择史料与需要的联系');
+    placeholder.value = '';
+    reasoning.append(placeholder);
+    const needs: Record<string, string> = {
+      'history-event-2001': '科研协作 → 研究电池、电机与电控',
+      'history-event-2009': '城市出行 → 在真实道路中示范、检验新能源车',
+      'history-event-2015': '观察道路 → 在测试道路研究环境感知',
+      'history-event-2020': '使用需要 → 发展充电设施和联网功能',
+      'history-event-2026': '补能需要 → 继续探索电池与充电技术',
+    };
+    const choices = historyCards.map((card) => ({
+      value: `依据${card.year}「${card.label}」：${needs[card.id] ?? card.label}。`,
+      label: `${card.year} · ${needs[card.id] ?? card.label}`,
+    }));
+    for (const choice of choices) {
+      const option = element('option', choice.label);
+      option.value = choice.value;
+      reasoning.append(option);
+    }
+    reasoning.value = choices.some((choice) => choice.value === draft.reasoning) ? draft.reasoning : '';
+    if (draft.reasoning && !reasoning.value) {
+      const legacy = element('details', '', 'lab-secondary-details');
+      legacy.append(element('summary', '查看以前保存的推理'), element('p', draft.reasoning, 'lab-help'));
+      root.append(legacy);
+    }
     label.append(reasoning);
-    reasoning.addEventListener('input', () => {
+    reasoning.addEventListener('change', () => {
       draft.reasoning = reasoning.value;
       changed();
     });
     root.append(label);
   } else {
-    root.append(element('h3', '先比较能源，再检验电驱链路', 'lab-label'));
     const label = element('label', '能源方案', 'lab-label');
     const select = element('select', '', 'lab-select');
     for (const [value, copy] of Object.entries(energyCopy)) {
@@ -176,7 +207,7 @@ export const createHistoryExperiment: ExperimentFactory = (host, context) => {
     root.append(label);
     const description = element('p', '', 'lab-note');
     const note = element('p', '', 'lab-help');
-    const electricControls = element('div', '', 'lab-control-group');
+    const electricControls = element('div', '', 'lab-options');
     const updateEnergy = () => {
       description.textContent = energyCopy[draft.energy].path;
       note.textContent = energyCopy[draft.energy].note;
@@ -187,15 +218,14 @@ export const createHistoryExperiment: ExperimentFactory = (host, context) => {
       updateEnergy();
       changed();
     });
-    root.append(
+    const energyDetails = element('details', '', 'lab-secondary-details');
+    energyDetails.append(
+      element('summary', '能源说明与模型边界'),
       description,
       note,
-      element(
-        'p',
-        '下方断路实验只检验纯电动教学台架。切换其他能源后，请先切回纯电动再运行实验。',
-        'lab-help',
-      ),
+      element('p', '断路实验只检验纯电动教学台架；其他能源只比较路径。', 'lab-help'),
     );
+    root.append(energyDetails);
     const originalRoot = root;
     const addControl = (text: string, key: 'power' | 'transmission') => {
       toggle(text, key);
@@ -203,8 +233,8 @@ export const createHistoryExperiment: ExperimentFactory = (host, context) => {
     };
     addControl('接通电池供能', 'power');
     addControl('连接传动机构', 'transmission');
-    root.append(
-      electricControls,
+    root.append(electricControls);
+    energyDetails.append(
       element(
         'p',
         '理想教学台架：忽略惯性、滑行与再生制动。断供能时电机与车轮均停止；只断传动时电机可转、车轮不转。',
@@ -215,11 +245,23 @@ export const createHistoryExperiment: ExperimentFactory = (host, context) => {
     source.href = 'https://afdc.energy.gov/vehicles/how-do-all-electric-cars-work';
     source.target = '_blank';
     source.rel = 'noopener noreferrer';
-    root.append(source);
+    energyDetails.append(source);
     updateEnergy();
   }
+  const viewDetails = element('details', '', 'lab-secondary-details');
+  viewDetails.append(element('summary', history ? '查看史料、来源与显示设置' : '模型显示设置'));
+  if (history) viewDetails.append(archiveDetail);
   toggle('展开部件，查看连接关系', 'exploded');
+  viewDetails.append(root.lastChild!);
   toggle('显示内部结构', 'cutaway');
+  viewDetails.append(root.lastChild!);
+  if (history) root.append(viewDetails);
+  else {
+    const combined = root.querySelector('details')!;
+    combined.querySelector('summary')!.textContent = '能源、模型边界与显示设置';
+    combined.append(...Array.from(viewDetails.children).slice(1));
+    root.append(combined);
+  }
   sync();
   return {
     getDraft: () => ({ ...draft, order: [...draft.order] }),
@@ -240,7 +282,7 @@ export const createHistoryExperiment: ExperimentFactory = (host, context) => {
           ],
           notes: [
             ...result.conflicts,
-            draft.reasoning.trim() ? `我的推理：${draft.reasoning.trim()}` : '尚未写下史料推理。',
+            draft.reasoning.trim() ? `我的推理：${draft.reasoning.trim()}` : '尚未选择史料推理。',
             '电动化与智能化可以并行，年代排序不代表单线替代关系。',
           ],
           valid: result.conflicts.length === 0 && draft.reasoning.trim().length >= 10,

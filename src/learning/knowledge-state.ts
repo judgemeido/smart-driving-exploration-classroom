@@ -63,6 +63,7 @@ export interface KnowledgeRecord {
   submitted: { answers: number[]; score: number } | null;
   reviewed: boolean;
   correction: string;
+  correctionChoices?: Array<number | null>;
 }
 export interface KnowledgeData {
   version: 1;
@@ -122,7 +123,13 @@ export function restoreKnowledge(raw: string | null): { data: KnowledgeData; pro
         ) ||
         typeof r.reviewed !== 'boolean' ||
         typeof r.correction !== 'string' ||
-        r.correction.length > 2000
+        r.correction.length > 2000 ||
+        (r.correctionChoices !== undefined &&
+          (!Array.isArray(r.correctionChoices) ||
+            r.correctionChoices.length !== 3 ||
+            !r.correctionChoices.every(
+              (a: unknown) => a === null || (Number.isInteger(a) && Number(a) >= 0 && Number(a) <= 2),
+            )))
       )
         throw Error();
       if (r.submitted !== null) {
@@ -136,12 +143,15 @@ export function restoreKnowledge(raw: string | null): { data: KnowledgeData; pro
           throw Error();
         const expected = submitKnowledge(id, { ...r, submitted: null }).submitted!;
         if (r.submitted.score !== expected.score) throw Error();
-      } else if (r.reviewed || r.correction) throw Error();
+      } else if (r.reviewed || r.correction || r.correctionChoices?.some((a: unknown) => a !== null))
+        throw Error();
+      if (!r.reviewed && r.correctionChoices?.some((a: unknown) => a !== null)) throw Error();
       data.records[id] = {
         answers: [...r.answers],
         submitted: r.submitted ? { answers: [...r.submitted.answers], score: r.submitted.score } : null,
         reviewed: r.reviewed,
         correction: r.correction,
+        ...(r.correctionChoices ? { correctionChoices: [...r.correctionChoices] } : {}),
       };
     }
     return { data, protected: false };

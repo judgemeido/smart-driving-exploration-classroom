@@ -1,5 +1,6 @@
 import './styles.css';
 import { activities, sections } from './catalog';
+import { activityChoices } from './choices';
 import { parseRoute, routeHash, type Route } from './routes';
 import { appendRun, emptyRecord, loadPortfolio, savePortfolio, validatePortfolio } from './records';
 import { createStage } from './stage';
@@ -50,8 +51,8 @@ function download() {
   a.click();
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
-function evidenceMarkup(e: Observation) {
-  return `<h4>${safe(e.title)}</h4><p>${safe(e.summary)}</p><dl>${e.metrics.map((m) => `<div><dt>${safe(m.label)}</dt><dd>${safe(m.value)}</dd></div>`).join('')}</dl><details><summary>依据与模型边界</summary><ul>${e.notes.map((n) => `<li>${safe(n)}</li>`).join('')}</ul></details>`;
+function evidenceMarkup(e: Observation, showNotes = true) {
+  return `<h4>${safe(e.title)}</h4><p>${safe(e.summary)}</p><dl>${e.metrics.map((m) => `<div><dt>${safe(m.label)}</dt><dd>${safe(m.value)}</dd></div>`).join('')}</dl>${showNotes ? `<details><summary>依据与模型边界</summary><ul>${e.notes.map((n) => `<li>${safe(n)}</li>`).join('')}</ul></details>` : ''}`;
 }
 function conditionsMarkup(draft: unknown) {
   if (!draft || typeof draft !== 'object') return '';
@@ -110,6 +111,14 @@ function mountLesson(id: Exclude<Route, 'traffic' | 'report' | 'Q1' | 'Q2'>) {
   let scene: SceneSnapshot = { kind: 'vehicle' };
   let disposed = false;
   const abort = new AbortController();
+  const choices = activityChoices[id];
+  const choiceMarkup = (
+    kind: 'prediction' | 'explanation',
+    legend: string,
+    options: string[],
+    previous: string,
+  ) =>
+    `<fieldset class="choice-group" data-${kind}><legend>${legend}</legend>${options.map((label, index) => `<label class="choice-option"><input type="radio" name="${kind}" value="${index}"${previous === label ? ' checked' : ''}><span>${safe(label)}</span></label>`).join('')}</fieldset>${previous && !options.includes(previous) ? `<details class="previous-response"><summary>查看之前保存的文字记录</summary><p>${safe(previous)}</p></details>` : ''}`;
   view.innerHTML = `<div class="lesson lesson--${id}"><aside class="lesson-index"><p>${section.short}</p><nav aria-label="当前章节活动">${activities
     .filter((a) => a.section === activity.section)
     .map(
@@ -118,21 +127,55 @@ function mountLesson(id: Exclude<Route, 'traffic' | 'report' | 'Q1' | 'Q2'>) {
     )
     .join(
       '',
-    )}</nav><div class="learning-cycle"><strong>每一次探索</strong><ol><li>听老师讲解</li><li>写下预测</li><li>改变一个条件</li><li>记录证据，解释变化</li></ol></div></aside><article class="lesson-body"><div class="lesson-heading"><div><h1 id="lesson-title" tabindex="-1">${activity.title}</h1><p>${activity.question}</p></div><span class="lesson-tag">${section.number} / ${section.short}</span></div><details class="teacher-note"><summary>老师讲解 <span>听完后，开始你的独立验证</span></summary><p>${activity.teacher}</p></details><div class="work-area"><section class="model-area" aria-label="三维观察台"><div class="model-toolbar"><span>功能模型 · 拖动旋转，滚轮缩放</span><button type="button" data-camera>重置视角</button></div><div class="model-stage" data-model-stage></div><div class="model-bottom"><span data-model-description>先观察结构，再改变一个条件</span><div><button type="button" data-replay>演示当前状态</button><button type="button" data-quality aria-pressed="false">低配模式</button></div></div></section><aside class="experiment-panel"><h2>动手验证</h2><p class="experiment-instruction">${activity.instruction}</p><section class="prediction-panel"><label for="prediction">先预测</label><p>${activity.predictionPrompt}</p><textarea id="prediction" data-prediction rows="2" maxlength="500" placeholder="我认为……因为……">${safe(record.prediction)}</textarea></section><div class="run-area"><p class="run-hint">每次运行保存一份独立证据，调整后可以再次对照。</p><button type="button" class="primary-button" data-run>运行并记录 <svg viewBox="0 0 20 20" aria-hidden="true"><path d="m7 4 7 6-7 6Z" fill="currentColor"/></svg></button><p class="inline-feedback" data-feedback role="status" aria-live="polite"></p></div><div data-experiment-controls></div></aside></div><section class="evidence-section" aria-labelledby="evidence-title"><div class="section-heading"><h2 id="evidence-title">我的观察证据</h2><span data-run-count></span></div><p class="section-intro">保留变化前后的结果。比较时，看看你是否只改变了一个条件。</p><div class="evidence-list" data-evidence></div></section><section class="reflection-section"><div><h2>用证据说明发现</h2><p>${activity.transfer}</p><p class="lab-help">预测不必正确。说明“我改变了什么、观察到了什么”，就是有价值的发现。</p></div><div><label for="explanation">我的解释</label><textarea id="explanation" data-explanation rows="3" maxlength="1000" placeholder="改变……后，我发现……；这说明……">${safe(record.explanation)}</textarea><div class="reflection-actions"><button type="button" data-complete class="secondary-button">保存我的解释</button><span data-saved role="status"></span></div><p data-save-status class="save-status" role="status"></p></div></section><div class="lesson-next">${activities.findIndex((a) => a.id === id) < activities.length - 1 ? `<a href="${routeHash(activities[activities.findIndex((a) => a.id === id) + 1].id)}">继续下一项探索 <span>→</span></a>` : '<a href="#report">整理我的学习记录 <span>→</span></a>'}<button type="button" data-export>导出学习记录</button></div></article></div>`;
+    )}</nav><div class="learning-cycle"><strong>每一次探索</strong><ol><li>听老师讲解</li><li>点击选择预测</li><li>改变一个条件</li><li>对照证据，选择发现</li></ol></div></aside><article class="lesson-body">
+    <div class="lesson-heading"><div><h1 id="lesson-title" tabindex="-1">${activity.title}</h1><p>${activity.question}</p></div><span class="lesson-tag">${section.number} / ${section.short}</span></div>
+    <details class="teacher-note"><summary>老师讲解 <span>听完后，开始你的独立验证</span></summary><p>${activity.teacher}</p></details>
+    <div class="work-area"><section class="model-area" aria-label="三维观察台"><div class="model-toolbar"><span>功能模型 · 拖动旋转，滚轮缩放</span><button type="button" data-camera>重置视角</button></div><div class="model-stage" data-model-stage></div><div class="model-bottom"><span data-model-description>先观察结构，再改变一个条件</span><div><button type="button" data-replay>演示当前状态</button><button type="button" data-quality aria-pressed="false">低配模式</button></div></div></section>
+    <aside class="lesson-workbench" aria-label="探索工作台"><nav class="lesson-steps" aria-label="探索步骤">${(['prediction', 'experiment', 'evidence', 'reflection'] as const).map((step, i) => `<button type="button" data-step="${step}" aria-controls="step-${step}"${i === 0 ? ' aria-current="step"' : ''}><span aria-hidden="true">${i + 1}</span> ${['预测', '操作', '证据', '发现'][i]}</button>`).join('')}</nav><div class="lesson-panels">
+    <section id="step-prediction" class="step-panel" data-panel="prediction" aria-label="选择预测"><div class="prediction-panel"><h2>先选一个预测</h2><p>${activity.predictionPrompt}</p>${choiceMarkup('prediction', '你认为会怎样？', choices.predictions, record.prediction)}<p class="lab-help">先选你的想法，再用实验验证。预测不必正确。</p></div><div class="step-actions"><button type="button" class="primary-button" data-go="experiment">选好了，去操作 →</button></div></section>
+    <section id="step-experiment" class="step-panel experiment-panel" data-panel="experiment" aria-label="动手操作" hidden><h2 class="visually-hidden">动手验证</h2><p class="experiment-instruction">${activity.instruction}</p><div data-experiment-controls></div><div class="run-area"><button type="button" class="primary-button" data-run>运行并记录 <svg viewBox="0 0 20 20" aria-hidden="true"><path d="m7 4 7 6-7 6Z" fill="currentColor"/></svg></button><p class="inline-feedback" data-feedback role="status" aria-live="polite"></p></div></section>
+    <section id="step-evidence" class="step-panel evidence-section" data-panel="evidence" aria-label="查看证据" hidden><div class="section-heading"><h2 id="evidence-title">我的观察证据</h2><span data-run-count></span></div><div class="evidence-list" data-evidence></div><div class="step-actions"><button type="button" class="secondary-button" data-go="experiment">再改一个条件</button><button type="button" class="primary-button" data-go="reflection">选择我的发现 →</button></div></section>
+    <section id="step-reflection" class="step-panel reflection-section" data-panel="reflection" aria-label="选择发现" hidden><div><h2>用证据选择发现</h2><p>${activity.transfer}</p></div><div>${choiceMarkup('explanation', '选择与你的观察相符的一项', choices.findings, record.explanation)}<div class="reflection-actions"><button type="button" data-complete class="primary-button">保存我的发现</button><span data-saved role="status"></span></div><p class="lab-help">只记录你的选择；是否支持这项发现，还要回看实际证据。</p></div></section>
+    </div></aside></div><div class="lesson-next">${activities.findIndex((a) => a.id === id) < activities.length - 1 ? `<a href="${routeHash(activities[activities.findIndex((a) => a.id === id) + 1].id)}">继续下一项探索 <span>→</span></a>` : '<a href="#report">整理我的学习记录 <span>→</span></a>'}<span data-save-status class="save-status" role="status"></span><button type="button" data-export>导出学习记录</button></div></article></div>`;
   const status = view.querySelector<HTMLElement>('[data-save-status]')!;
   const feedback = view.querySelector<HTMLElement>('[data-feedback]')!;
   const controls = view.querySelector<HTMLElement>('[data-experiment-controls]')!;
   const stage = createStage(view.querySelector<HTMLElement>('[data-model-stage]')!);
-  const prediction = view.querySelector<HTMLTextAreaElement>('[data-prediction]')!;
-  const explanation = view.querySelector<HTMLTextAreaElement>('[data-explanation]')!;
+  const prediction = view.querySelector<HTMLFieldSetElement>('[data-prediction]')!;
+  const explanation = view.querySelector<HTMLFieldSetElement>('[data-explanation]')!;
+  const selectedChoice = (field: HTMLElement, options: string[]) => {
+    const checked = field.querySelector<HTMLInputElement>('input:checked');
+    return checked ? options[Number(checked.value)] : '';
+  };
+  function showStep(step: string, focus = false) {
+    if (step === 'experiment') feedback.textContent = '';
+    view.querySelectorAll<HTMLElement>('[data-panel]').forEach((panel) => {
+      panel.hidden = panel.dataset.panel !== step;
+      if (!panel.hidden) panel.scrollTop = 0;
+    });
+    view.querySelectorAll<HTMLButtonElement>('[data-step]').forEach((button) => {
+      if (button.dataset.step === step) button.setAttribute('aria-current', 'step');
+      else button.removeAttribute('aria-current');
+    });
+    if (focus) view.querySelector<HTMLElement>(`[data-step="${step}"]`)?.focus({ preventScroll: true });
+  }
+  view
+    .querySelectorAll<HTMLButtonElement>('[data-step],[data-go]')
+    .forEach((button) =>
+      button.addEventListener(
+        'click',
+        () => showStep(button.dataset.step ?? button.dataset.go!, !!button.dataset.go),
+        { signal: abort.signal },
+      ),
+    );
   let experiment: Experiment | undefined;
   function saveDraft() {
     if (!experiment || disposed) return;
     record = {
       ...record,
       draft: structuredClone(experiment.getDraft()),
-      prediction: prediction.value,
-      explanation: explanation.value,
+      prediction: selectedChoice(prediction, choices.predictions) || record.prediction,
+      explanation: selectedChoice(explanation, choices.findings) || record.explanation,
     };
     portfolio.records[id] = record;
     persist(status);
@@ -164,28 +207,50 @@ function mountLesson(id: Exclude<Route, 'traffic' | 'report' | 'Q1' | 'Q2'>) {
     next.href = routeHash(id === 'E2' ? 'Q1' : 'Q2');
     next.textContent = '进入课堂知识交流 →';
   }
+  let evidenceIndex = Math.max(0, record.runs.length - 1);
   function renderEvidence() {
     view.querySelector('[data-run-count]')!.textContent =
       record.runs.length === 12 ? '保留首次与最近 11 次验证' : `${record.runs.length} 次验证`;
-    view.querySelector('[data-evidence]')!.innerHTML = record.runs.length
-      ? record.runs
-          .map(
-            (r, i) =>
-              `<article class="evidence-run" data-evidence-run><div class="evidence-run-heading"><strong>观察 ${i + 1}</strong><span>${i === record.runs.length - 1 ? '最近一次' : '保留的证据'}</span></div><p class="evidence-prediction">当时的预测：${safe(r.prediction)}</p>${evidenceMarkup(r.evidence)}<details><summary>当时的实验条件</summary>${conditionsMarkup(r.draft)}</details></article>`,
-          )
-          .join('')
-      : '<div class="evidence-empty"><span>还没有记录</span><p>写下预测，改变一个条件，然后点击“运行并记录”。你的结果会保存在这里。</p></div>';
+    evidenceIndex = Math.min(evidenceIndex, Math.max(0, record.runs.length - 1));
+    const r = record.runs[evidenceIndex];
+    view.querySelector('[data-evidence]')!.innerHTML = r
+      ? `<nav class="evidence-navigation" aria-label="切换观察记录"><button type="button" class="lab-inline-action" data-evidence-index="0"${evidenceIndex === 0 ? ' disabled' : ''}>首次</button><button type="button" class="lab-inline-action" data-evidence-index="${evidenceIndex - 1}"${evidenceIndex === 0 ? ' disabled' : ''}>上一次</button><span>${evidenceIndex + 1} / ${record.runs.length}</span><button type="button" class="lab-inline-action" data-evidence-index="${evidenceIndex + 1}"${evidenceIndex === record.runs.length - 1 ? ' disabled' : ''}>下一次</button><button type="button" class="lab-inline-action" data-evidence-index="${record.runs.length - 1}"${evidenceIndex === record.runs.length - 1 ? ' disabled' : ''}>最新</button></nav><article class="evidence-run" data-evidence-run><h3 class="visually-hidden">观察 ${evidenceIndex + 1}</h3>${evidenceMarkup(r.evidence, false)}<details><summary>预测、条件与模型说明</summary><p class="evidence-prediction">当时的预测：${safe(r.prediction)}</p>${conditionsMarkup(r.draft)}<ul>${r.evidence.notes.map((note) => `<li>${safe(note)}</li>`).join('')}</ul></details>${evidenceIndex > 0 ? `<details class="evidence-baseline"><summary>与第一次观察对照</summary>${evidenceMarkup(record.runs[0].evidence)}${conditionsMarkup(record.runs[0].draft)}</details>` : ''}</article>`
+      : '<div class="evidence-empty"><span>还没有记录</span><p>点击选择预测，改变一个条件，再点击“运行并记录”。</p></div>';
   }
+  view.querySelector('[data-evidence]')!.addEventListener(
+    'click',
+    (event) => {
+      const button =
+        event.target instanceof Element
+          ? event.target.closest<HTMLButtonElement>('[data-evidence-index]')
+          : null;
+      if (!button || button.disabled) return;
+      const label = button.textContent;
+      evidenceIndex = Number(button.dataset.evidenceIndex);
+      renderEvidence();
+      const replacement = Array.from(view.querySelectorAll<HTMLButtonElement>('[data-evidence-index]')).find(
+        (item) => item.textContent === label,
+      );
+      if (replacement && !replacement.disabled) replacement.focus({ preventScroll: true });
+      else
+        view
+          .querySelector<HTMLButtonElement>('[data-evidence-index]:not(:disabled)')
+          ?.focus({ preventScroll: true });
+    },
+    { signal: abort.signal },
+  );
   renderEvidence();
   if (initial.error) status.textContent = initial.error;
   const listen = (selector: string, type: string, fn: () => void) =>
     view.querySelector(selector)!.addEventListener(type, fn, { signal: abort.signal });
-  listen('[data-prediction]', 'input', saveDraft);
-  listen('[data-explanation]', 'input', saveDraft);
+  listen('[data-prediction]', 'change', saveDraft);
+  listen('[data-explanation]', 'change', saveDraft);
   listen('[data-run]', 'click', () => {
-    if (!prediction.value.trim()) {
-      feedback.textContent = '先写下一句预测，再验证你的想法。预测错误也可以继续。';
-      prediction.focus();
+    const selected = selectedChoice(prediction, choices.predictions);
+    if (!selected) {
+      status.textContent = '先点击选择一个预测，再验证你的想法。';
+      showStep('prediction');
+      prediction.querySelector<HTMLInputElement>('input')!.focus({ preventScroll: true });
       return;
     }
     const evidence = experiment!.observe();
@@ -194,27 +259,29 @@ function mountLesson(id: Exclude<Route, 'traffic' | 'report' | 'Q1' | 'Q2'>) {
       draft: experiment!.getDraft(),
       scene,
       evidence,
-      prediction: prediction.value,
+      prediction: selected,
     });
+    evidenceIndex = record.runs.length - 1;
     saveDraft();
     renderEvidence();
     stage.replay();
     feedback.textContent = `已记录第 ${record.runs.length} 次观察。${evidence.valid ? '试着只改一个条件，再运行一次作对照。' : '证据已保存；请根据结果补充或调整，再验证。'}`;
+    showStep('evidence', true);
   });
   listen('[data-complete]', 'click', () => {
     const saved = view.querySelector<HTMLElement>('[data-saved]')!;
     if (!record.runs.some((r) => r.evidence.valid)) {
-      saved.textContent = '先完成一次有效验证，再保存解释。';
+      saved.textContent = '先完成一次有效验证，再保存发现。';
       return;
     }
-    if (!explanation.value.trim()) {
-      saved.textContent = '写下你从证据中发现了什么。';
-      explanation.focus();
+    if (!selectedChoice(explanation, choices.findings)) {
+      saved.textContent = '请点击选择一项与观察证据相符的发现。';
+      explanation.querySelector<HTMLInputElement>('input')!.focus({ preventScroll: true });
       return;
     }
     record.completed = true;
     saveDraft();
-    saved.textContent = '解释已记入学习档案。你仍可以继续实验。';
+    saved.textContent = '发现已记入学习档案，可以继续验证。';
   });
   listen('[data-camera]', 'click', () => stage.resetCamera());
   listen('[data-replay]', 'click', () => stage.replay());
@@ -242,7 +309,7 @@ function mountReport() {
   view.innerHTML = `<article class="report-page"><div class="lesson-heading"><div><h1 id="lesson-title">我的学习记录</h1><p>把操作变成证据，把证据连成解释。</p></div><button type="button" class="primary-button" data-export>导出学习记录</button></div><p class="lab-note">记录保存在当前浏览器。换电脑前请导出；这里没有整班排名。旧活动成绩保留在原存储中，不转换成学习完成。</p><div class="report-list">${activities
     .map((a) => {
       const r = portfolio.records[a.id];
-      return `<section><div><span>${a.id}</span><a href="${routeHash(a.id)}">${a.title}</a><strong>${r?.completed ? '已写下解释' : r?.runs.length ? '已有观察，等待解释' : '尚未记录'}</strong></div><p>${r?.explanation ? safe(r.explanation) : '进入活动，留下自己的预测与观察。'}</p><details><summary>查看 ${r?.runs.length ?? 0} 次证据</summary>${r?.runs.map((e) => `<article class="evidence-run">${evidenceMarkup(e.evidence)}</article>`).join('') ?? ''}</details></section>`;
+      return `<section><div><span>${a.id}</span><a href="${routeHash(a.id)}">${a.title}</a><strong>${r?.completed ? '已保存发现' : r?.runs.length ? '已有观察，等待选择发现' : '尚未记录'}</strong></div><p>${r?.explanation ? safe(r.explanation) : '进入活动，点击选择预测并留下观察。'}</p><details><summary>查看 ${r?.runs.length ?? 0} 次证据</summary>${r?.runs.map((e) => `<article class="evidence-run">${evidenceMarkup(e.evidence)}</article>`).join('') ?? ''}</details></section>`;
     })
     .join(
       '',
