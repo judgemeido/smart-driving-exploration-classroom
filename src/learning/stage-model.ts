@@ -1,5 +1,32 @@
 import type { SceneSnapshot } from './types';
 import { normalizeSensorDraft, traceSensor } from './activities/sensor-state';
+/** Teaching reduction mechanism, in illustrative model units; not vehicle CAD dimensions. */
+export const DRIVE_GEOMETRY = {
+  teeth: { input: 18, output: 54 },
+  module: 0.038,
+  centerDistance: 1.368,
+  outputPhase: Math.PI / 54,
+} as const;
+
+export function driveMechanism(s: SceneSnapshot, seconds: number) {
+  const pose = drivePose(s, seconds);
+  const ratio = DRIVE_GEOMETRY.teeth.output / DRIVE_GEOMETRY.teeth.input;
+  return {
+    motorAngle: pose.motorAngle,
+    inputGearAngle: pose.motorAngle,
+    outputGearAngle: DRIVE_GEOMETRY.outputPhase - pose.wheelAngle,
+    wheelAngle: -pose.wheelAngle || 0,
+    motorActive: !!s.running && s.power !== false,
+    outputActive: !!s.running && s.power !== false && s.transmission !== false,
+    ratio,
+    teeth: DRIVE_GEOMETRY.teeth,
+    module: DRIVE_GEOMETRY.module,
+    pitchRadii: {
+      input: (DRIVE_GEOMETRY.teeth.input * DRIVE_GEOMETRY.module) / 2,
+      output: (DRIVE_GEOMETRY.teeth.output * DRIVE_GEOMETRY.module) / 2,
+    },
+  };
+}
 export function drivePose(s: SceneSnapshot, seconds: number) {
   const time = Math.max(0, Math.min(3, Number.isFinite(seconds) ? seconds : 0));
   const motor = !!s.running && s.power !== false;

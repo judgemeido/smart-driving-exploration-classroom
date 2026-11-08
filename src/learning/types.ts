@@ -42,6 +42,7 @@ export interface ExperimentContext {
 export interface Experiment {
   getDraft(): unknown;
   observe(): Observation;
+  selectPart?(part: string): void;
   dispose(): void;
 }
 export type ExperimentFactory = (host: HTMLElement, context: ExperimentContext) => Experiment;

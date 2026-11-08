@@ -143,10 +143,7 @@ export const createSensorExperiment: ExperimentFactory = (host, context) => {
     field.append(label);
   }
   const display = group('模型显示');
-  for (const [key, text] of [
-    ['showRay', '显示传播路径'],
-    ['cutaway', '剖开传感器'],
-  ] as const) {
+  for (const [key, text] of [['showRay', '显示传播路径']] as const) {
     const label = document.createElement('label');
     label.className = 'lab-option';
     const input = document.createElement('input');

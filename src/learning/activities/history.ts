@@ -39,12 +39,14 @@ const energyCopy = {
 export const createHistoryExperiment: ExperimentFactory = (host, context) => {
   let draft = restoreHistoryDraft(context.initialDraft);
   const history = context.activityId === 'H1';
+  let historyFocus = 'overview';
   const root = element('div', '', 'lab-control-group');
   host.append(root);
   const sync = () =>
     context.setScene({
       kind: 'vehicle',
       energy: draft.energy,
+      selected: history ? historyFocus : undefined,
       power: history ? true : draft.power,
       transmission: history ? true : draft.transmission,
       running: !history && draft.energy === 'electric' && draft.power,
@@ -83,6 +85,7 @@ export const createHistoryExperiment: ExperimentFactory = (host, context) => {
     browse.addEventListener('change', () => {
       selectedCard = browse.value;
       renderCards();
+      changed();
     });
     root.append(browseLabel);
     const feedback = element('p', '', 'lab-note');
@@ -98,6 +101,16 @@ export const createHistoryExperiment: ExperimentFactory = (host, context) => {
       });
       if (focusId) selectedCard = focusId;
       browse.value = selectedCard;
+      historyFocus =
+        (
+          {
+            'history-event-2001': 'motor',
+            'history-event-2009': 'battery',
+            'history-event-2015': 'sensor',
+            'history-event-2020': 'computer',
+            'history-event-2026': 'battery',
+          } as Record<string, string>
+        )[selectedCard] ?? 'overview';
       draft.order.forEach((id, index) => {
         if (id !== selectedCard) return;
         const card = historyCards.find((item) => item.id === id)!;
@@ -249,19 +262,9 @@ export const createHistoryExperiment: ExperimentFactory = (host, context) => {
     updateEnergy();
   }
   const viewDetails = element('details', '', 'lab-secondary-details');
-  viewDetails.append(element('summary', history ? '查看史料、来源与显示设置' : '模型显示设置'));
+  viewDetails.append(element('summary', '查看史料与来源'));
   if (history) viewDetails.append(archiveDetail);
-  toggle('展开部件，查看连接关系', 'exploded');
-  viewDetails.append(root.lastChild!);
-  toggle('显示内部结构', 'cutaway');
-  viewDetails.append(root.lastChild!);
   if (history) root.append(viewDetails);
-  else {
-    const combined = root.querySelector('details')!;
-    combined.querySelector('summary')!.textContent = '能源、模型边界与显示设置';
-    combined.append(...Array.from(viewDetails.children).slice(1));
-    root.append(combined);
-  }
   sync();
   return {
     getDraft: () => ({ ...draft, order: [...draft.order] }),

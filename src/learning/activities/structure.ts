@@ -68,7 +68,6 @@ export const createStructureExperiment: ExperimentFactory = (host, context) => {
       <select class="lab-select" id="structure-part" data-field="selected">${Object.entries(parts)
         .map(([key, label]) => option(key, label, state.selected))
         .join('')}</select>
-      <div class="lab-options">${checkbox('exploded', '分层展开', state.exploded)}${checkbox('cutaway', '打开壳体 / 剖切观察', state.cutaway)}</div>
       <div class="lab-options">${checkbox('power', '接通电源', state.power)}${checkbox('transmission', '接通传动', state.transmission)}</div>
       <p class="lab-source">${inspectPart(state.selected, state.power, state.transmission)}</p>
     </div>`;
@@ -174,6 +173,11 @@ export const createStructureExperiment: ExperimentFactory = (host, context) => {
   render();
   return {
     getDraft: () => ({ ...state }),
+    selectPart(part: string) {
+      if (!Object.hasOwn(parts, part)) return;
+      state = parseStructureDraft({ ...state, selected: part });
+      changed(false);
+    },
     observe(): Observation {
       if (!isChain)
         return {
@@ -183,10 +187,9 @@ export const createStructureExperiment: ExperimentFactory = (host, context) => {
             { label: '观察部件', value: parts[state.selected] },
             { label: '电源', value: state.power ? '接通' : '断开' },
             { label: '传动', value: state.transmission ? '接通' : '断开' },
-            { label: '车轮驱动', value: state.power ? '能量路径连通' : '驱动路径中断' },
             {
-              label: '视图',
-              value: `${state.exploded ? '分层展开' : '整体'} / ${state.cutaway ? '壳体打开' : '壳体闭合'}`,
+              label: '车轮驱动',
+              value: !state.power ? '供能断开' : !state.transmission ? '传动断开，车轮停止' : '能量路径连通',
             },
           ],
           notes: [

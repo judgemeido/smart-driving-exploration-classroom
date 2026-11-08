@@ -161,3 +161,22 @@
   .choice-option,.reflection-section .choice-option{padding:10px;font-size:16px}
   .sensor-dimensions{grid-template-columns:1fr}
 }
+
+/* Give mechanical observation the broadest column on classroom desktops. */
+@media(min-width:1100px) and (min-height:650px){
+  .lesson{grid-template-columns:140px minmax(0,1fr);gap:18px}
+  .work-area{grid-template-columns:minmax(0,1fr) clamp(350px,29vw,400px);gap:16px}
+  .lesson-index nav a{grid-template-columns:25px 1fr;column-gap:5px;padding:9px 6px}
+  .lesson-index>p{font-size:16px}
+  .learning-cycle{margin-top:18px;font-size:16px}
+  .model-toolbar{background:#f3f2eb;border-bottom:1px solid #d3d6cd;border-radius:9px 9px 0 0}
+  .model-stage:has(.mechanical-stage){min-height:0;background:#e9e8e0;overflow:hidden}
+  .model-bottom{background:#f3f2eb;border-top:1px solid #d3d6cd;border-radius:0 0 9px 9px;min-height:52px}
+  .model-bottom>span{flex:1 1 120px;font-size:15px;line-height:1.5}
+  .model-bottom button{padding-inline:7px}
+  .teacher-note[open]{max-height:145px;overflow-y:auto}
+  .lesson-next .save-status{margin-top:0;font-size:15px}
+  .step-panel[data-panel="prediction"]{height:100%;min-height:0}
+  .step-panel[data-panel="prediction"]>.prediction-panel{flex:1;min-height:0;overflow-y:auto;padding-right:4px}
+  .step-panel[data-panel="prediction"]>.step-actions{flex:none;margin-top:0;padding-top:10px}
+}
