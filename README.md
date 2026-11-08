@@ -1,44 +1,40 @@
 # 智驾博物馆
 
-中国新能源汽车、车辆结构、激光雷达和道路安全四个互动展厅。TypeScript + Vite 6 + Three.js，纯前端静态应用。
+中国新能源汽车、车辆结构、激光雷达和道路安全四个互动展厅，另有三个独立二维科学活动。TypeScript + Vite 6 + Three.js，纯前端静态应用；科学活动不加载三维库或模型。
 
 ## 启动和检查
 
-建议使用 Node.js 24，本次验证版本 24.14.0。
+建议 Node.js 24。首次安装执行 `npm ci`，开发执行 `npm run dev`。
 
 ```sh
-npm ci
-npm run dev
+npm run test:unit
+npm run build
+npm run test:e2e
+npm run check
 ```
 
-```sh
-npm run test:unit   # 章节规则、生命周期、请求和内容完整性
-npm run build       # TypeScript 检查与生产构建
-npm run test:e2e    # 生产浏览器交互与故障恢复验证
-npm run check       # 自动串联以上三项
-```
+浏览器测试默认 Google Chrome、生产预览端口4173，必须先构建。使用 Playwright Chromium 时安装 `npx playwright install chromium`，设置 `PLAYWRIGHT_CHANNEL=chromium`。产物在dist；支持Vite `--base`子路径部署。
 
-本机测试默认使用已安装的 Google Chrome，预览端口 4173。使用 Playwright 自带 Chromium 时，先运行 npx playwright install chromium，再设置 PLAYWRIGHT_CHANNEL=chromium。GitHub Actions 已配置相同安装和检查流程。单独运行浏览器测试前需要构建 dist；npm run check 会自动构建。
+## 浏览与动手操作
 
-npm run format 格式化源码和测试。部署产物在 dist；图片与模型从 public/assets 复制。子路径托管可通过 Vite --base 指定基路径。
-
-## 修改内容
-
-| 展厅 | 目录 | 主要修改位置 |
+| 页面 | 路径 | 内容 |
 | --- | --- | --- |
-| 01 发展历史 | src/chapters/history | data.ts 改展品；learning-data.ts 改主题、排序、匹配和未来选择；learning-state.ts 改任务规则 |
-| 02 结构展厅 | src/chapters/explore | data.ts 改原装配任务；learning-data/learning-targets 改复习和 13 项挑战；assembly-state/vehicle-rig 改分组归位 |
-| 03 激光雷达 | src/chapters/lidar | data.ts 改原部件和步骤；learning-data 改传感器卡与题目；learning-measurement/learning-world/weather-state 改新实验 |
-| 04 道路安全 | src/chapters/traffic | data.ts 改原八题；learning-data 改复习和进阶五题；practice-state/practice-scene 改新阶段与场景 |
+| 四个原展厅 | `/index.html#history`、`#explore`、`#lidar`、`#traffic` | 14展品、三维拆解、雷达演示、道路安全 |
+| 01 进化修复站 | `/games/history/index.html` | 时间轨道、需求装配、未来说明卡 |
+| 02 系统维修台 | `/games/structure/index.html` | 三个系统、13部件主题、3张功能关系图 |
+| 03 回波侦探 | `/games/sensor/index.html` | 发射与接收、扫描测量、天气证据与行动 |
 
-完整架构图、小游戏构成和内容修改位置见 [PROJECT_ARCHITECTURE.md](PROJECT_ARCHITECTURE.md)。这些说明是仓库维护文档，网页继续面向最终用户提供四个互动展厅。
+菜单将原展厅与对应活动并列。原展厅章节总数仍为04，独立活动刷新与返回使用真实HTML页面。旧01主题/任务、02十三挑战、03新学习区的重复UI和专属逻辑已迁出；02复习与四步归位、04全部保留。
 
-四章已分离内容、规则/状态、输入和场景，controller 负责连接。任务推进、雷达实验和答题计分可以独立验证，内容修改路径见 [内容与小游戏修改地图](docs/engineering/content-editing-guide.md)，各章有详细指南。前轮内部整理的记录见 [执行记录](docs/engineering/domain-expansion-progress.md)。本轮新教学内容的实现、验证与逐章 Git 提交见 [学习路线实施记录](docs/engineering/upper-primary-learning-progress.md)。
+练习不限时、不提供正式分数；正式挑战6分钟。同活动、同挑战码、同档位、同内容/评分版本的首次正式成绩才可比较。暂停/后台不暂停正式倒计时，离页、刷新与缓存退出会中断。记录只存在当前浏览器，不上传、不跨设备同步；存储失败仍可玩并明确显示未保存。
 
-面向小学五至六年级的 [01–04 教学内容准备稿](docs/content/2026-11-08-upper-primary/README.md) 保留为内容参考。页面运行内容以各章有类型的 learning-data.ts 为唯一来源；修改题目时同时维护稳定 ID、答案、反馈与章内测试。
+## 维护
 
-本轮按照 [01–04 闯关式学习 Plan](docs/superpowers/plans/2026-11-08-upper-primary-learning-plan.md) 分章实施，包含 02 分组归位。原浏览、三任务、雷达演示及道路八题/8 分保留；新挑战在原四个展厅内进入。学习草稿与成果仅保存在已挂载控制器内，普通切章保留，刷新、页面退出（包括浏览器缓存返回）或故障重建后重置。05/06 留作后续方向。
+- [当前架构](PROJECT_ARCHITECTURE.md)：入口、依赖、生命周期与数据流。
+- [内容修改地图](docs/engineering/content-editing-guide.md)：三活动与四展厅的文件职责。
+- [实施验收](docs/engineering/science-activities-ui-verification.md)：测试、尺寸截图、审核、迁移清单与限制。
+- [计分与本机记录](docs/engineering/2026-11-08-science-arcade-scoring.md)。
 
-四章控制器实现 setActive 与 dispose，DOM 查询限定于章节 host。三维章节按需加载，离开和进入后台时暂停，资源和绘图故障在本章内恢复。旧驾驶小游戏在 src/chapters/driving，当前未注册。
+三活动的领域状态位于 `src/activities/*-lab/state.ts`；公共比赛与存储位于 `src/shared/arcade`，公共UI位于 `src/ui/arcade`。原展厅仍由 `src/app/chapters.ts` 注册并按需加载。纯内容只读适配保留原事实来源，不导入旧控制器。
 
-GitHub skill 来源和采用方法见 [调研记录](docs/engineering/skill-research.md)。第三方模型许可见 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)。
+[内容准备稿](docs/content/2026-11-08-upper-primary/README.md)保留作史料与教学参考，运行以有类型的源码为准。第三方模型许可见 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)。旧翻新/学习实施文档保留历史记录，当前结构以以上文档为准。

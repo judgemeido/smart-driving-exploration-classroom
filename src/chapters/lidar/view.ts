@@ -2,8 +2,6 @@ export const view = `
       <div class="lidar-workbench">
         <div class="lidar-stage" data-lidar-stage>
           <canvas data-lidar-canvas aria-label="Velodyne VLP-16 激光雷达三维模型，可拖动旋转并缩放"></canvas>
-          <div class="lidar-learning-labels" data-lidar-learning-labels hidden aria-label="教学场景目标"></div>
-          <div class="lidar-learning-stage-note" data-lidar-learning-stage-note hidden>教学模型与点云 · 目标底部标记是距离参考点</div>
           <div class="lidar-stage__grid" aria-hidden="true"></div>
           <div class="lidar-stage__topline"><span><i>03</i> 感知实验室</span><span>杭州 · 智驾博物馆</span></div>
           <div class="lidar-stage__specimen" aria-hidden="true"><span>展品编号</span><strong>LD—016</strong><i></i><small>MECHANICAL LIDAR<br />ROTATING SCAN / 360°</small></div>
@@ -31,8 +29,6 @@ export const view = `
             <p>它测量光的往返时间，把距离变成可计算的空间。</p>
           </div>
 
-          <button class="lidar-learning-entry" type="button" data-lidar-learning-toggle aria-expanded="false">打开传感器实验室</button>
-          <section class="lidar-learning" data-lidar-learning hidden aria-label="传感器学习活动"></section>
 
           <div class="lidar-object-line">
             <span>本次展品 <strong>Velodyne VLP‑16</strong></span>

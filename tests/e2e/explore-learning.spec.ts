@@ -1,7 +1,6 @@
 import { expect, test, type Page } from '@playwright/test';
 import type * as THREE from 'three';
-import { exploreLearningTasks, exploreReviewQuestions } from '../../src/chapters/explore/learning-data';
-import { exploreLearningTargets } from '../../src/chapters/explore/learning-targets';
+import { exploreReviewQuestions } from '../../src/chapters/explore/learning-data';
 
 type CameraObservation = { matrix: number[]; target: number[]; position: number[] };
 type ExploreProbe = {
@@ -34,7 +33,7 @@ async function observeExplore(page: Page) {
     document.addEventListener(
       'click',
       (event) => {
-        if ((event.target as Element).closest('[data-learning-start], [data-assembly-open]')) {
+        if ((event.target as Element).closest('[data-assembly-open]')) {
           probe.entry = read();
           probe.exit = undefined;
         }
@@ -42,8 +41,7 @@ async function observeExplore(page: Page) {
       true,
     );
     document.addEventListener('click', (event) => {
-      if ((event.target as Element).closest('[data-learning-cancel], [data-assembly-cancel]'))
-        probe.exit = read();
+      if ((event.target as Element).closest('[data-assembly-cancel]')) probe.exit = read();
     });
     devtools.addEventListener('observe', (event) => {
       const renderer = (event as CustomEvent).detail as THREE.WebGLRenderer;
@@ -84,7 +82,7 @@ async function cameraObservation(page: Page, boundary?: 'entry' | 'exit') {
 }
 
 for (const timing of ['pending damping', 'resumed auto-rotation'] as const) {
-  test(`02 cancel restores the actual custom camera and orbit target for challenge and assembly with ${timing}`, async ({
+  test(`02 cancel restores the actual custom camera and orbit target for assembly with ${timing}`, async ({
     page,
   }) => {
     await openExplore(page);
@@ -113,33 +111,20 @@ for (const timing of ['pending damping', 'resumed auto-rotation'] as const) {
         })
         .toBeGreaterThan(0.01);
     }
-    for (const mode of ['learning', 'assembly'] as const) {
-      await page.locator(mode === 'learning' ? '[data-learning-start]' : '[data-assembly-open]').click();
-      const before = await cameraObservation(page, 'entry');
-      if (mode === 'learning') {
-        expect(
-          Math.hypot(...before.position.map((value, index) => value - original.position[index])),
-        ).toBeGreaterThan(0.1);
-        expect(
-          Math.hypot(...before.target.map((value, index) => value - original.target[index])),
-        ).toBeGreaterThan(0.01);
-      }
-      if (mode === 'learning') await page.locator('[data-learning-frame]').click();
-      else {
-        await page.locator('[data-assembly-next]').click();
-        await page.waitForTimeout(250);
-      }
-      await page.locator(mode === 'learning' ? '[data-learning-cancel]' : '[data-assembly-cancel]').click();
-      await expect(
-        page.locator(mode === 'learning' ? '[data-learning-start]' : '[data-assembly-open]'),
-      ).toBeFocused();
-      const after = await cameraObservation(page, 'exit');
-      for (let index = 0; index < 16; index++)
-        expect(after.matrix[index]).toBeCloseTo(before.matrix[index], 10);
-      for (let index = 0; index < 3; index++)
-        expect(after.target[index]).toBeCloseTo(before.target[index], 10);
-      await expect(page.locator('[data-explode-toggle]')).toHaveAttribute('aria-pressed', 'true');
-    }
+    await page.locator('[data-assembly-open]').click();
+    const before = await cameraObservation(page, 'entry');
+    expect(
+      Math.hypot(...before.position.map((value, index) => value - original.position[index])),
+    ).toBeGreaterThan(0.1);
+    await page.locator('[data-assembly-next]').click();
+    await page.waitForTimeout(250);
+    await page.locator('[data-assembly-cancel]').click();
+    await expect(page.locator('[data-assembly-open]')).toBeFocused();
+    const after = await cameraObservation(page, 'exit');
+    for (let index = 0; index < 16; index++)
+      expect(after.matrix[index]).toBeCloseTo(before.matrix[index], 10);
+    for (let index = 0; index < 3; index++) expect(after.target[index]).toBeCloseTo(before.target[index], 10);
+    await expect(page.locator('[data-explode-toggle]')).toHaveAttribute('aria-pressed', 'true');
   });
 }
 
@@ -266,23 +251,6 @@ async function pickAssembly(page: Page, assemblyName: string, learningTarget = f
   await expect(popup).toHaveAttribute('aria-hidden', learningTarget ? 'true' : 'false');
 }
 
-async function answerCurrent(page: Page, index: number) {
-  const task = exploreLearningTasks[index];
-  const target = exploreLearningTargets[task.targetKey];
-  const names =
-    target.kind === 'teaching-hotspot'
-      ? [target.hotspotId!]
-      : (target.requiredTargetGroups?.map((group) => group[0]) ?? [target.names[0]]);
-  for (const name of names) await page.locator(`[data-learning-diagram="${name}"]`).click();
-  const wrong = task.question.choices.find((c) => c.id !== task.question.correctChoiceId)!;
-  await page.locator(`[data-learning-answer="${wrong.id}"]`).click();
-  await expect(page.locator('[data-learning-feedback]')).toContainText(task.question.retryFeedback);
-  await expect(page.locator('[data-learning-continue]')).toBeDisabled();
-  await page.locator(`[data-learning-answer="${task.question.correctChoiceId}"]`).click();
-  await expect(page.locator('[data-learning-feedback]')).toContainText(task.question.correctFeedback);
-  await page.locator('[data-learning-continue]').click();
-}
-
 test('02 reviews the original three systems with correction and preserves the original mission', async ({
   page,
 }) => {
@@ -308,139 +276,6 @@ test('02 reviews the original three systems with correction and preserves the or
   await page.locator('[data-explore-review-close]').click();
   await page.locator('[data-model-action="doors"]').click();
   await expect(page.locator('[data-model-action="doors"]')).toHaveAttribute('aria-pressed', 'true');
-});
-
-test('02 completes 13 diagram tasks with keyboard, reports sources, and retains progress across chapters', async ({
-  page,
-}) => {
-  await openExplore(page);
-  await page.locator('[data-learning-start]').click();
-  await expect(page.locator('[data-learning-continue]')).toBeDisabled();
-  await expect(page.locator('[data-focus-detail]')).toBeHidden();
-  await page.locator('[data-learning-diagram="BatteryPack"]').focus();
-  await page.keyboard.press('Enter');
-  await expect(page.locator('[data-learning-found]')).toContainText('动力电池');
-  for (let index = 0; index < 4; index++) await answerCurrent(page, index);
-  await navigate(page, 'history');
-  await navigate(page, 'explore');
-  await expect(page.locator('[data-learning-progress]')).toHaveText('4 / 13');
-  await expect(page.locator('[data-disassembly-progress]')).toHaveText('0 / 3');
-  await page.locator('[data-learning-cancel]').click();
-  await expect(page.locator('[data-learning-start]')).toBeFocused();
-  await page.locator('[data-part-filter="energy"]').click();
-  await expect(page.locator('[data-part-filter-count]')).toContainText('能源系统');
-  await page.locator('[data-focus="battery"]').click();
-  await expect(page.locator('[data-focus-title]')).toHaveText('电池系统');
-  await page.locator('[data-learning-start]').click();
-  for (let index = 4; index < 13; index++) {
-    if (index === 5) {
-      for (const name of ['FrontSuspension', 'RearSuspension'])
-        await page.locator(`[data-learning-diagram="${name}"]`).click();
-      await expect(page.locator('[data-learning-answer]')).toHaveCount(0);
-      await expect(page.locator('[data-learning-continue]')).toBeDisabled();
-    }
-    if (index === 11)
-      await expect(page.locator('[data-learning-diagram="teaching-millimeter-radar"]')).toContainText(
-        '教学示意',
-      );
-    if (index === 11) {
-      await expect(page.locator('[data-learning-frame]')).toBeDisabled();
-      await expect(page.locator('[data-learning-frame-note]')).toContainText('教学卡片');
-    }
-    await answerCurrent(page, index);
-  }
-  await expect(page.locator('[data-learning-progress]')).toHaveText('13 / 13');
-  await expect(page.locator('[data-learning-report] li')).toHaveCount(13);
-  await expect(page.locator('[data-learning-report]')).toContainText('图文学习');
-  await page.locator('[data-learning-research]').fill('<script>我想研究雨天轮胎</script>');
-  await page.locator('[data-learning-cancel]').click();
-  await page.locator('[data-learning-start]').click();
-  await expect(page.locator('[data-learning-research]')).toHaveValue('<script>我想研究雨天轮胎</script>');
-  await page.locator('[data-learning-reset]').click();
-  await expect(page.locator('[data-learning-progress]')).toHaveText('0 / 13');
-});
-
-test('02 persisted page exit resets only new learning and restores original observation', async ({
-  page,
-}) => {
-  await openExplore(page);
-  await page.locator('[data-disassembly-start]').click();
-  await page.waitForTimeout(1500);
-  for (const name of ['BatteryPack', 'ADAS', 'Cabin']) await pickAssembly(page, name);
-  await page.locator('[data-part-popup-close]').click();
-  await page.locator('[data-explore-review-open]').click();
-  await page.locator(`[data-review-answer="${exploreReviewQuestions[0].correctChoiceId}"]`).click();
-  await page.locator('[data-explore-review-close]').click();
-  await page.locator('[data-part-filter="energy"]').click();
-  await page.locator('[data-focus="battery"]').click();
-  await page.locator('[data-learning-start]').click();
-  await answerCurrent(page, 0);
-  await page.locator('[data-learning-research]').fill('我想研究不同轮胎在雨天的表现');
-  await page.evaluate(() => window.dispatchEvent(new PageTransitionEvent('pagehide', { persisted: true })));
-  await page.evaluate(() => window.dispatchEvent(new PageTransitionEvent('pageshow', { persisted: true })));
-  await expect(page.locator('[data-explore-learning]')).toBeHidden();
-  await expect(page.locator('[data-disassembly-progress]')).toHaveText('3 / 3');
-  await expect(page.locator('[data-part-filter="energy"]')).toHaveAttribute('aria-selected', 'true');
-  await expect(page.locator('[data-focus-title]')).toHaveText('电池系统');
-  await expect(page.locator('[data-explode-toggle]')).toHaveAttribute('aria-pressed', 'true');
-  await page.locator('[data-learning-start]').click();
-  await expect(page.locator('[data-learning-progress]')).toHaveText('0 / 13');
-  await expect(page.locator('[data-learning-report] li')).toHaveCount(0);
-  await expect(page.locator('[data-learning-research]')).toHaveValue('');
-  await page.locator('[data-learning-cancel]').click();
-  await page.locator('[data-explore-review-open]').click();
-  await expect(page.locator('[data-review-answer][aria-pressed="true"]')).toHaveCount(0);
-  await page.locator('[data-explore-review-close]').click();
-  await page.locator('[data-assembly-open]').click();
-  await page.locator('[data-assembly-next]').click();
-  await page.waitForTimeout(250);
-  await page.evaluate(() => window.dispatchEvent(new PageTransitionEvent('pagehide', { persisted: true })));
-  await page.evaluate(() => window.dispatchEvent(new PageTransitionEvent('pageshow', { persisted: true })));
-  await expect(page.locator('[data-explore-assembly]')).toBeHidden();
-  await expect(page.locator('[data-explode-toggle]')).toHaveAttribute('aria-pressed', 'true');
-  await page.locator('[data-assembly-open]').click();
-  await expect(page.locator('[data-assembly-count]')).toHaveText('0 / 4');
-  await page.locator('[data-assembly-cancel]').click();
-  await page.locator('[data-learning-start]').click();
-  await answerCurrent(page, 0);
-  await page.locator('[data-learning-research]').fill('普通切章仍应保留学习问题');
-  await navigate(page, 'history');
-  await navigate(page, 'explore');
-  await expect(page.locator('[data-learning-progress]')).toHaveText('1 / 13');
-  await expect(page.locator('[data-learning-research]')).toHaveValue('普通切章仍应保留学习问题');
-});
-
-test('02 allows text learning during model failure and retry does not duplicate completion', async ({
-  page,
-}) => {
-  await page.route('**/assets/yaojing-s9-optimized.glb', (route) => route.abort());
-  await page.goto('/#explore');
-  await expect(page.locator('[data-model-loading-label]')).toContainText('失败');
-  await page.locator('[data-learning-start]').click();
-  await expect(page.locator('[data-learning-mode]')).toContainText('模型暂不可用');
-  await expect(page.locator('[data-learning-frame]')).toBeDisabled();
-  await expect(page.locator('[data-learning-frame-note]')).toContainText('图文学习');
-  await answerCurrent(page, 0);
-  await expect(page.locator('[data-learning-report]')).toContainText('图文学习');
-  await page.unroute('**/assets/yaojing-s9-optimized.glb');
-  await page.getByRole('button', { name: '重新加载模型', exact: true }).click();
-  await expect(page.locator('[data-model-loading]')).toHaveClass(/is-complete/, { timeout: 30000 });
-  await expect(page.locator('[data-learning-progress]')).toHaveText('1 / 13');
-});
-
-test('02 identifies an actual camera child beneath ADAS and reports a model find', async ({ page }) => {
-  await openExplore(page);
-  await page.locator('[data-learning-start]').click();
-  for (let index = 0; index < 8; index++) await answerCurrent(page, index);
-  await page.waitForTimeout(1500);
-  await page.locator('[data-learning-frame]').click();
-  await pickAssembly(page, 'Front_camera_optic', true);
-  await expect(page.locator('[data-learning-found]')).toContainText('前向摄像头');
-  const task = exploreLearningTasks[8];
-  await page.locator(`[data-learning-answer="${task.question.correctChoiceId}"]`).click();
-  await page.locator('[data-learning-continue]').click();
-  await expect(page.locator('[data-learning-report]')).toContainText('前向摄像头 · 模型探索');
-  await expect(page.locator('[data-disassembly-progress]')).toHaveText('0 / 3');
 });
 
 test('02 teaching return pauses, restores cancel, completes closed, and leaves original explosion usable', async ({
@@ -472,4 +307,25 @@ test('02 teaching return pauses, restores cancel, completes closed, and leaves o
   await navigate(page, 'explore');
   await page.locator('[data-model-action="lights"]').click();
   await expect(page.locator('[data-model-action="lights"]')).toHaveAttribute('aria-pressed', 'true');
+});
+
+test('02 duplicate learning controls are removed while model retry and assembly remain', async ({ page }) => {
+  await page.route('**/assets/yaojing-s9-optimized.glb', (route) => route.abort());
+  await page.goto('/#explore');
+  await expect(page.locator('[data-model-loading-label]')).toContainText('失败');
+  await expect(page.locator('[data-learning-start]')).toHaveCount(0);
+  await expect(page.locator('[data-explore-learning]')).toHaveCount(0);
+  await expect(page.locator('[data-disassembly-start]')).toBeVisible();
+  await expect(page.locator('[data-assembly-open]')).toBeVisible();
+  await page.unroute('**/assets/yaojing-s9-optimized.glb');
+  await page.getByRole('button', { name: '重新加载模型', exact: true }).click();
+  await expect(page.locator('[data-model-loading]')).toHaveClass(/is-complete/, { timeout: 30000 });
+  await page.locator('[data-assembly-open]').click();
+  await page.locator('[data-assembly-next]').click();
+  await page.waitForTimeout(250);
+  await page.evaluate(() => window.dispatchEvent(new PageTransitionEvent('pagehide', { persisted: true })));
+  await page.evaluate(() => window.dispatchEvent(new PageTransitionEvent('pageshow', { persisted: true })));
+  await expect(page.locator('[data-explore-assembly]')).toBeHidden();
+  await page.locator('[data-assembly-open]').click();
+  await expect(page.locator('[data-assembly-count]')).toHaveText('0 / 4');
 });

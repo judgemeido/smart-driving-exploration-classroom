@@ -1,0 +1,15 @@
+.arcade-root {
+  --arcade-bg: #f5f8fc;
+  --arcade-surface: #fff;
+  --arcade-ink: #183153;
+  --arcade-muted: #4c627a;
+  --arcade-primary: #2457d6;
+  --arcade-on-primary: #fff;
+  --arcade-success: #087b63;
+  --arcade-success-bg: #e8f6f0;
+  --arcade-error: #ad3445;
+  --arcade-error-bg: #fff0f1;
+  --arcade-energy: #f6c85f;
+  --arcade-control-outline: #6e8298;
+  --arcade-divider: #d6e1ee;
+}

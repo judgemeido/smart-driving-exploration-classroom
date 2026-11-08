@@ -14,22 +14,6 @@ export const view = `
           <div class="paper-headline"><strong>一辆车，汇集了能源、工程与智能技术</strong><span>点选年份，跳到对应展品</span></div>
         </div>
 
-        <section class="history-learning-entry" aria-label="汽车进化学习任务">
-          <div>
-            <span class="timeline-kicker">汽车进化研究员</span>
-            <h2>读主题卡，完成三个研究任务</h2>
-            <p data-history-learning-intro></p>
-          </div>
-          <button class="history-learning-button" type="button" data-history-learning-toggle aria-expanded="false" aria-controls="history-learning-panel">打开学习任务</button>
-        </section>
-        <section class="history-learning-panel" id="history-learning-panel" data-history-learning-panel hidden aria-label="汽车进化学习区">
-          <button class="history-learning-button history-learning-close" type="button" data-history-learning-close>收起学习任务</button>
-          <div data-history-reading></div>
-          <div data-history-learning></div>
-          <p class="history-learning-bridge" data-history-learning-bridge></p>
-          <button class="text-button" type="button" data-next="explore">继续去看汽车里面有什么 <span>↗</span></button>
-        </section>
-
         <div class="history-paper-lead">
           <article class="paper-lead-story">
             <span class="timeline-kicker">欢迎来到智驾博物馆</span>

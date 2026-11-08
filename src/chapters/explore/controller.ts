@@ -22,14 +22,8 @@ import { disposeObject } from '../../shared/three-resources';
 import type { ChapterController } from '../../app/types';
 import { watchWebglContext, reportChapterError } from '../../shared/webgl';
 import { evaluateChoice } from '../../shared/learning-assessment';
-import { exploreLearningTasks, exploreReviewQuestions } from './learning-data';
-import { exploreLearningTargets, resolveLearningTargetName } from './learning-targets';
-import {
-  createExploreLearningState,
-  reduceExploreLearning,
-  type ExploreLearningAction,
-} from './learning-state';
-import { renderExploreLearning, renderExploreReview, renderExploreAssembly } from './learning-view';
+import { exploreReviewQuestions } from './learning-data';
+import { renderExploreReview, renderExploreAssembly } from './learning-view';
 import { createAssemblyReturnState, reduceAssemblyReturn, stepAssemblyReturn } from './assembly-state';
 import {
   captureCameraObservation,
@@ -123,13 +117,9 @@ function createController(host: HTMLElement, scope: ReturnType<typeof createScop
   let selectedPartMesh: THREE.Mesh | null = null;
 
   let missionState = createMissionState();
-  let learningState = createExploreLearningState();
   let assemblyState = createAssemblyReturnState();
-  let learningOpen = false;
   let assemblyOpen = false;
   let reviewOpen = false;
-  let modelAvailable = false;
-  let researchQuestion = '';
   const reviewAnswers: Record<string, string> = {};
   let savedObservation: {
     focus: FocusKey;
@@ -146,55 +136,6 @@ function createController(host: HTMLElement, scope: ReturnType<typeof createScop
     const reviewButton = host.querySelector<HTMLButtonElement>('[data-explore-review-open]');
     if (reviewButton) reviewButton.hidden = missionState.index < disassemblyTasks.length;
   };
-  const refreshLearning = () => {
-    const focused =
-      document.activeElement instanceof HTMLElement && host.contains(document.activeElement)
-        ? document.activeElement
-        : null;
-    const identity =
-      focused?.getAttribute('data-learning-diagram') ?? focused?.getAttribute('data-learning-answer');
-    const attribute = focused?.hasAttribute('data-learning-diagram')
-      ? 'data-learning-diagram'
-      : 'data-learning-answer';
-    renderExploreLearning(host, learningState);
-    const panel = host.querySelector<HTMLElement>('[data-explore-learning]');
-    if (panel) panel.hidden = !learningOpen;
-    const mode = host.querySelector<HTMLElement>('[data-learning-mode]');
-    if (mode)
-      mode.textContent = modelAvailable
-        ? '点击真实模型探索，或用部件示意完成图文学习；报告会记录学习方式。'
-        : '模型暂不可用，可以继续通过部件位置示意完成图文学习。';
-    const research = host.querySelector<HTMLTextAreaElement>('[data-learning-research]');
-    if (research) research.value = researchQuestion;
-    const frame = host.querySelector<HTMLButtonElement>('[data-learning-frame]');
-    const frameNote = host.querySelector<HTMLElement>('[data-learning-frame-note]');
-    const task = exploreLearningTasks[learningState.taskIndex];
-    const teachingOnly = task && exploreLearningTargets[task.targetKey].kind === 'teaching-hotspot';
-    if (frame) frame.disabled = !modelAvailable || !!teachingOnly;
-    if (frameNote && (!modelAvailable || teachingOnly))
-      frameNote.textContent = teachingOnly
-        ? '这项活动使用教学卡片。请在下面选择利用无线电波探测的设备。'
-        : '模型暂不可用，请在下面的部件示意中选择位置，继续图文学习。';
-    if (identity) {
-      const replacement = Array.from(host.querySelectorAll<HTMLButtonElement>(`[${attribute}]`)).find(
-        (item) => item.getAttribute(attribute) === identity,
-      );
-      replacement?.focus({ preventScroll: true });
-    }
-    const launch = host.querySelector<HTMLButtonElement>('[data-learning-start]');
-    if (launch)
-      launch.textContent = learningState.active ? '继续结构挑战 · 查看探索报告' : '开始结构挑战 · 13 项探索';
-  };
-  const actLearning = (action: ExploreLearningAction) => {
-    learningState = reduceExploreLearning(
-      learningState,
-      action,
-      exploreLearningTasks,
-      exploreLearningTargets,
-    );
-    refreshLearning();
-  };
-
   const closePowerflowStory = () => {
     powerflowScene.update(powerflowState, activeFocus);
     adasOverlay?.classList.toggle('is-visible', activeFocus === 'adas');
@@ -341,26 +282,6 @@ function createController(host: HTMLElement, scope: ReturnType<typeof createScop
       .find((item) => item.object instanceof THREE.Mesh);
     if (!hit || !(hit.object instanceof THREE.Mesh)) return;
     if (assemblyOpen) return;
-    if (learningOpen) {
-      const task = exploreLearningTasks[learningState.taskIndex];
-      if (!task) return;
-      const names: string[] = [];
-      let node: THREE.Object3D | null = hit.object;
-      while (node) {
-        names.push(node.name);
-        if (node === assemblyRoot) break;
-        node = node.parent;
-      }
-      const name = resolveLearningTargetName(names, exploreLearningTargets[task.targetKey]);
-      if (name) actLearning({ type: 'pick', targetName: name, source: 'model' });
-      else {
-        const notice = host.querySelector<HTMLElement>('[data-learning-found]');
-        if (notice)
-          notice.textContent = '这处还不符合当前提示。观察位置，再试一次；也可以查看下面的部件示意。';
-      }
-      // Original inspector and mission receive no challenge picks.
-      return;
-    }
     let assembly: THREE.Object3D = hit.object;
     while (assembly.parent && assembly.parent !== assemblyRoot) assembly = assembly.parent;
     showPartInspector(hit.object, assembly);
@@ -405,7 +326,6 @@ function createController(host: HTMLElement, scope: ReturnType<typeof createScop
         return;
       }
       modelRoot = gltf.scene;
-      modelAvailable = true;
       const { size, scale } = vehicleRig.prepareModel(modelRoot);
       powerflowScene.prepareModel(modelRoot, size);
       vehicleRig.prepareExplosionRigs();
@@ -418,13 +338,10 @@ function createController(host: HTMLElement, scope: ReturnType<typeof createScop
       loading?.classList.add('is-complete');
       if (modelStatus) modelStatus.textContent = 'LIVE / READY';
       setFocus(activeFocus);
-      refreshLearning();
       if (assemblyOpen) vehicleRig.setTeachingAssemblyProgress(assemblyState);
-      if (exploreActive && !powerflowState.played && !learningOpen && !assemblyOpen) startPowerflow();
+      if (exploreActive && !powerflowState.played && !assemblyOpen) startPowerflow();
     } catch (error) {
       if (scope.signal.aborted) return;
-      modelAvailable = false;
-      refreshLearning();
       updateLoading(100, '模型载入失败，可重新加载');
       if (modelStatus) modelStatus.textContent = 'LOAD ERROR';
       if (gltf) {
@@ -693,39 +610,6 @@ function createController(host: HTMLElement, scope: ReturnType<typeof createScop
     if (assembled) updateCameraLimits(false);
     savedObservation = null;
   };
-  const frameLearningArea = () => {
-    const task = exploreLearningTasks[learningState.taskIndex];
-    const assemblyRoot = vehicleRig.assemblyRoot;
-    if (!task || !assemblyRoot || !modelRoot) return;
-    const target = exploreLearningTargets[task.targetKey];
-    const region = new THREE.Box3();
-    const assemblies = new Set<THREE.Object3D>();
-    for (const name of target.names) {
-      let node = modelRoot.getObjectByName(name);
-      if (!node) continue;
-      while (node.parent && node.parent !== assemblyRoot) node = node.parent;
-      assemblies.add(node);
-    }
-    for (const assembly of assemblies) region.expandByObject(assembly);
-    if (region.isEmpty()) return;
-    const center = region.getCenter(new THREE.Vector3());
-    const size = region.getSize(new THREE.Vector3());
-    const extent = Math.max(size.y, size.x / Math.max(camera.aspect, 0.1), size.z, 0.1);
-    const distance = (extent / (2 * Math.tan(THREE.MathUtils.degToRad(camera.fov) / 2))) * 1.4;
-    const direction = camera.position.clone().sub(controls.target).normalize();
-    controls.target.copy(center);
-    camera.position.copy(center).addScaledVector(direction, distance);
-    cameraMinDistance = Math.max(0.04, Math.min(1.2, extent * 0.25));
-    cameraMaxDistance = Math.max(homeMaxDistance, distance * 3);
-    updateCameraLimits(true);
-  };
-  const closeLearning = (returnFocus = false) => {
-    learningOpen = false;
-    refreshLearning();
-    restoreObservation();
-    if (returnFocus)
-      host.querySelector<HTMLButtonElement>('[data-learning-start]')?.focus();
-  };
   const closeAssembly = (restoreBefore = false, returnFocus = false) => {
     const complete = assemblyState.status === 'complete';
     assemblyState = reduceAssemblyReturn(assemblyState, 'cancel');
@@ -734,8 +618,7 @@ function createController(host: HTMLElement, scope: ReturnType<typeof createScop
     const panel = host.querySelector<HTMLElement>('[data-explore-assembly]');
     if (panel) panel.hidden = true;
     restoreObservation(complete && !restoreBefore);
-    if (returnFocus)
-      host.querySelector<HTMLButtonElement>('[data-assembly-open]')?.focus();
+    if (returnFocus) host.querySelector<HTMLButtonElement>('[data-assembly-open]')?.focus();
   };
   // Run before bootstrap tears down a non-cached page. Cached controllers also
   // lose new drafts on a page exit; ordinary chapter/background pauses retain them.
@@ -743,11 +626,8 @@ function createController(host: HTMLElement, scope: ReturnType<typeof createScop
     window,
     'pagehide',
     () => {
-      if (learningOpen) closeLearning();
       if (assemblyOpen) closeAssembly(true);
-      learningState = createExploreLearningState();
       assemblyState = createAssemblyReturnState();
-      researchQuestion = '';
       reviewOpen = false;
       for (const id of Object.keys(reviewAnswers)) delete reviewAnswers[id];
       renderExploreReview(host, reviewAnswers);
@@ -756,7 +636,6 @@ function createController(host: HTMLElement, scope: ReturnType<typeof createScop
       renderExploreAssembly(host, assemblyState);
       const assembly = host.querySelector<HTMLElement>('[data-explore-assembly]');
       if (assembly) assembly.hidden = true;
-      refreshLearning();
     },
     { capture: true },
   );
@@ -764,44 +643,7 @@ function createController(host: HTMLElement, scope: ReturnType<typeof createScop
   scope.listen(host, 'click', (event: MouseEvent) => {
     const button = event.target instanceof Element ? event.target.closest<HTMLButtonElement>('button') : null;
     if (!button || !host.contains(button) || button.disabled) return;
-    if (button.hasAttribute('data-learning-start') && !assemblyOpen && !learningOpen) {
-      saveObservation();
-      learningOpen = true;
-      if (reviewOpen) {
-        reviewOpen = false;
-        host.querySelector<HTMLElement>('[data-explore-review]')!.hidden = true;
-      }
-      setExploded(true);
-      actLearning({ type: 'start' });
-      host.querySelector<HTMLElement>('[data-learning-diagram]')?.focus({ preventScroll: true });
-    } else if (learningOpen && button.hasAttribute('data-learning-diagram')) {
-      const before = learningState;
-      actLearning({ type: 'pick', targetName: button.dataset.learningDiagram!, source: 'diagram' });
-      if (
-        before === learningState &&
-        !(learningState.found[exploreLearningTasks[learningState.taskIndex]?.id] ?? []).includes(
-          button.dataset.learningDiagram!,
-        )
-      ) {
-        const notice = host.querySelector<HTMLElement>('[data-learning-found]');
-        if (notice) notice.textContent = '这处还不符合提示。看看位置，换一处再试。';
-      }
-    } else if (learningOpen && button.hasAttribute('data-learning-answer')) {
-      actLearning({ type: 'answer', choiceId: button.dataset.learningAnswer! });
-    } else if (learningOpen && button.hasAttribute('data-learning-frame')) {
-      frameLearningArea();
-    } else if (learningOpen && button.hasAttribute('data-learning-continue')) {
-      actLearning({ type: 'continue' });
-      host.querySelector<HTMLElement>('[data-learning-diagram]')?.focus({ preventScroll: true });
-    } else if (learningOpen && button.hasAttribute('data-learning-cancel')) closeLearning(true);
-    else if (learningOpen && button.hasAttribute('data-learning-reset')) {
-      researchQuestion = '';
-      actLearning({ type: 'reset' });
-      actLearning({ type: 'start' });
-    } else if (
-      button.hasAttribute('data-explore-review-open') &&
-      missionState.index >= disassemblyTasks.length
-    ) {
+    if (button.hasAttribute('data-explore-review-open') && missionState.index >= disassemblyTasks.length) {
       reviewOpen = true;
       renderExploreReview(host, reviewAnswers);
       host.querySelector<HTMLElement>('[data-explore-review]')!.hidden = false;
@@ -818,7 +660,7 @@ function createController(host: HTMLElement, scope: ReturnType<typeof createScop
     } else if (button.hasAttribute('data-explore-review-close')) {
       reviewOpen = false;
       host.querySelector<HTMLElement>('[data-explore-review]')!.hidden = true;
-    } else if (button.hasAttribute('data-assembly-open') && !learningOpen && !assemblyOpen) {
+    } else if (button.hasAttribute('data-assembly-open') && !assemblyOpen) {
       saveObservation();
       assemblyOpen = true;
       assemblyState = createAssemblyReturnState();
@@ -831,10 +673,6 @@ function createController(host: HTMLElement, scope: ReturnType<typeof createScop
       vehicleRig.setTeachingAssemblyProgress(assemblyState);
       renderExploreAssembly(host, assemblyState);
     } else if (assemblyOpen && button.hasAttribute('data-assembly-cancel')) closeAssembly(false, true);
-  });
-  scope.listen(host, 'input', (event: Event) => {
-    if (event.target instanceof HTMLTextAreaElement && event.target.hasAttribute('data-learning-research'))
-      researchQuestion = event.target.value;
   });
   scope.listen(canvas, 'pointerdown', (event: PointerEvent) => {
     pointerDownPosition.set(event.clientX, event.clientY);
@@ -866,7 +704,7 @@ function createController(host: HTMLElement, scope: ReturnType<typeof createScop
   });
   controls.addEventListener('end', () => {
     rotationTimer.schedule(() => {
-      if (!learningOpen && !assemblyOpen) controls.autoRotate = true;
+      if (!assemblyOpen) controls.autoRotate = true;
     }, 2500);
   });
 
@@ -902,7 +740,6 @@ function createController(host: HTMLElement, scope: ReturnType<typeof createScop
     (error) => reportChapterError(host, error),
   );
   setFocus('all');
-  refreshLearning();
   scope.add(() => restoreMaterials());
   scope.add(() => clearSelectedPart());
   scope.add(() => resizeObserver.disconnect());
@@ -915,7 +752,7 @@ function createController(host: HTMLElement, scope: ReturnType<typeof createScop
       if (!active && powerflowState.playing) finishPowerflow('deactivate');
       if (active) {
         resize();
-        if (modelRoot && !powerflowState.played && !learningOpen && !assemblyOpen) startPowerflow();
+        if (modelRoot && !powerflowState.played && !assemblyOpen) startPowerflow();
       }
       loop.setActive(active);
     },

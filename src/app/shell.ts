@@ -1,4 +1,5 @@
 import type { ChapterDefinition } from './types';
+import { getNavigationGroups } from './navigation-items';
 
 export function renderShell(root: HTMLElement, chapters: readonly ChapterDefinition[]) {
   root.innerHTML = `
@@ -17,6 +18,13 @@ export function renderShell(root: HTMLElement, chapters: readonly ChapterDefinit
       </header>
       <nav id="chapter-menu" class="chapter-menu" aria-label="章节导航" data-chapter-menu>
         ${chapters.map((chapter) => `<button class="chapter-menu__item" type="button" data-go="${chapter.id}"><span>${chapter.number}</span><strong>${chapter.title}</strong><small>${chapter.subtitle}</small></button>`).join('')}
+        <details class="chapter-menu__activities" data-activity-menu><summary>科学活动</summary><div class="chapter-menu__activity-links">${getNavigationGroups()
+          .flatMap((group) =>
+            group.items
+              .filter((item) => item.kind === 'activity')
+              .map((item) => `<a href="${item.href}">${group.number} ${item.label}</a>`),
+          )
+          .join('')}</div></details>
       </nav>
       ${chapters.map((chapter) => `<section class="chapter chapter--${chapter.id}" id="${chapter.id}" data-page="${chapter.id}" aria-hidden="true" inert>${chapter.view}</section>`).join('')}
     </main>`;

@@ -1,34 +1,4 @@
-/* Chapter 03 / LiDAR sensing lab ------------------------------------------ */
-.lidar-learning-entry { flex-shrink: 0; min-height: 46px; padding: 10px 14px; border: 1px solid #83d9cc; color: #122523; background: #8fe8dc; text-align: left; font-size: 16px; font-weight: 600; }
-.lidar-learning { flex-shrink: 0; padding: 18px 0; color: #edf6f2; border-top: 1px solid rgba(143,232,220,.3); font-size: 16px; line-height: 1.65; }
-.lidar-learning[hidden], .lidar-learning [hidden], .lidar-learning-labels[hidden], .lidar-learning-stage-note[hidden] { display: none !important; }
-.lidar-learning__heading { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; }
-.lidar-learning h3 { font-size: 22px; line-height: 1.3; }
-.lidar-learning h4 { margin: 12px 0 8px; color: #a4eee0; font-size: 19px; line-height: 1.45; }
-.lidar-learning p { margin: 10px 0; }
-.lidar-learning__note { color: #b1c6bf; font-size: 14px; }
-.lidar-learning button { min-height: 44px; padding: 9px 12px; border: 1px solid #49665f; background: #203d35; color: #f0f8f4; font: inherit; font-size: 16px; line-height: 1.4; text-align: left; cursor: pointer; }
-.lidar-learning button[aria-pressed="true"] { border-color: #a4eee0; background: #365e51; box-shadow: inset 3px 0 #a4eee0; }
-.lidar-learning button:disabled { opacity: .55; cursor: default; }
-.lidar-learning button:focus-visible, .lidar-learning summary:focus-visible, .lidar-learning-entry:focus-visible, .lidar-learning-labels button:focus-visible { outline: 3px solid #f7cf89; outline-offset: 3px; }
-.lidar-learning__tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 18px 0; }
-.lidar-learning__choices { display: flex; flex-wrap: wrap; gap: 8px; margin: 10px 0; }
-.lidar-learning__choices button { flex: 1 1 110px; }
-.lidar-learning fieldset { min-width: 0; margin: 16px 0; padding: 12px; border: 1px solid #3c5650; }
-.lidar-learning legend { padding: 0 5px; }
-.lidar-learning details { margin: 16px 0; padding: 12px; border: 1px solid #3c5650; background: #132923; }
-.lidar-learning summary { cursor: pointer; color: #a4eee0; font-size: 16px; line-height: 1.5; }
-.lidar-learning ol, .lidar-learning ul { padding-left: 24px; }
-.lidar-learning li { margin: 8px 0; }
-.lidar-learning dt { margin-top: 12px; color: #b8edde; font-weight: 600; }
-.lidar-learning dd { margin-left: 0; }
-.lidar-learning [role="status"] { margin: 14px 0; padding: 12px; border-left: 3px solid #a4eee0; background: #18392e; }
-.lidar-learning-labels { position: absolute; inset: 0; z-index: 5; pointer-events: none; }
-.lidar-learning-labels button { position: absolute; transform: translate(-50%, -50%); min-height: 36px; padding: 6px 10px; border: 1px solid #94d8c6; color: #f1fff8; background: #173f35; font-size: 14px; white-space: nowrap; pointer-events: auto; }
-.lidar-learning-labels button[aria-pressed="true"] { color: #1b2b23; background: #f7cf89; border-color: #f7cf89; }
-.lidar-learning-stage-note { position: absolute; top: 56px; left: 20px; right: 20px; z-index: 4; padding: 8px 12px; border: 1px solid #608377; color: #e5f4eb; background: rgba(16,42,34,.85); font-size: 13px; pointer-events: none; }
-.is-learning-world .lidar-stage__readout, .is-learning-world .lidar-stage__notice, .is-learning-world .lidar-stage__specimen, .is-learning-world .lidar-scan-hud, .is-learning-world .lidar-object-line, .is-learning-world .lidar-panel > .lidar-section, .is-learning-world .lidar-actions, .is-learning-world .lidar-details { display: none; }
-@media (max-width: 760px) { .lidar-learning { padding-top: 14px; } .lidar-learning-stage-note { top: 38px; left: 12px; right: 12px; font-size: 12px; } }
+/* Chapter 03 / original LiDAR exhibit */
 html.page-lidar,
 body.page-lidar { height: 100svh; overflow: hidden; overscroll-behavior: none; }
 .page-lidar .site-shell { height: 100svh; min-height: 100svh; overflow: hidden; }
