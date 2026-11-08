@@ -1,40 +1,70 @@
-# 智驾博物馆
+# 智驾探索课堂
 
-中国新能源汽车、车辆结构、激光雷达和道路安全四个互动展厅，另有三个独立二维科学活动。TypeScript + Vite 6 + Three.js，纯前端静态应用；科学活动不加载三维库或模型。
+面向小学三至六年级的智能驾驶网页科普课堂。教师先讲解，学生每人一台电脑，通过选择预测、操作模型、比较证据和选择发现完成学习，无需实体部件或打字。
 
-## 启动和检查
+使用 TypeScript、Vite 6 和 Three.js，纯前端运行。01–03采用可交互的机械拆解观察台；原版历史博物馆、3D汽车、激光雷达及04道路安全展厅通过独立入口保留。
 
-建议 Node.js 24。首次安装执行 `npm ci`，开发执行 `npm run dev`。
+## 本地运行
+
+建议使用 Node.js 24，并安装 Google Chrome 以运行浏览器测试。
+
+```sh
+npm ci
+npm run dev
+```
+
+生产构建与预览：
+
+```sh
+npm run build
+npm run preview -- --host 127.0.0.1 --port 4173
+```
+
+打开 `http://127.0.0.1:4173/`。支持通过 Vite `--base` 参数部署到子路径。
+
+## 当前内容
+
+| 章节 | 入口 | 学习内容 |
+| --- | --- | --- |
+| 01 汽车如何进化 | `/games/history/index.html#history/H1` | 五份发展档案排序、史料推理、三种能源路径与纯电断路实验 |
+| 02 打开汽车看系统 | `/games/structure/index.html#explore/E1` | 电池、电机、齿轮、半轴、电控与制动拆解；输入、计算、执行的诊断与修复 |
+| 03 让汽车感知世界 | `/games/sensor/index.html#lidar/S1` | 摄像头、毫米波雷达、激光雷达结构；光脉冲测距、角度、遮挡与天气对照 |
+| 04 安全上路 | `/legacy.html#traffic` | 保留的道路安全活动与练习 |
+| 原版博物馆 | `/legacy.html#history` | 原历史展厅、3D汽车、激光雷达与道路安全四章导航 |
+| 我的学习记录 | `/index.html#report` | 本机证据与发现、JSON导出和恢复 |
+
+机械台提供装配、剖视、分解、部件点选、局部观察及全屏放大。电驱台包含铜绕组、转子、18/54齿轮、制动盘与电池层结构；感知台包含发射接收光路、镜组、成像芯片和天线阵列。结构放大观察与米制测距现场分开，读数由实验状态计算。
+
+课堂包含七项探索活动和两轮知识交流，无倒计时、生命值或排名。05、06仍为规划内容，未作为页面交付。
+
+## 检查
 
 ```sh
 npm run test:unit
 npm run build
 npm run test:e2e
+# 或执行完整检查
 npm run check
 ```
 
-浏览器测试默认 Google Chrome、生产预览端口4173，必须先构建。使用 Playwright Chromium 时安装 `npx playwright install chromium`，设置 `PLAYWRIGHT_CHANNEL=chromium`。产物在dist；支持Vite `--base`子路径部署。
+浏览器测试使用4173端口的生产预览，需先构建。默认使用系统 Google Chrome；也可安装 `npx playwright install chromium`，并设置 `PLAYWRIGHT_CHANNEL=chromium`。
 
-## 浏览与动手操作
+## 代码与文档
 
-| 页面 | 路径 | 内容 |
-| --- | --- | --- |
-| 四个原展厅 | `/index.html#history`、`#explore`、`#lidar`、`#traffic` | 14展品、三维拆解、雷达演示、道路安全 |
-| 01 进化修复站 | `/games/history/index.html` | 时间轨道、需求装配、未来说明卡 |
-| 02 系统维修台 | `/games/structure/index.html` | 三个系统、13部件主题、3张功能关系图 |
-| 03 回波侦探 | `/games/sensor/index.html` | 发射与接收、扫描测量、天气证据与行动 |
+- 当前课堂入口、舞台、活动与记录：`src/learning/`。
+- 原版展馆入口：`legacy.html`、`src/legacy.ts`，章节注册表为 `src/app/chapters.ts`。
+- [教师使用说明](docs/engineering/teardown-learning-guide.md)。
+- [机械模型来源与科学边界](docs/engineering/teardown-learning-sources.md)。
+- [验证记录](docs/engineering/teardown-learning-verification.md)。
+- [机械台升级计划](docs/superpowers/plans/2026-11-09-mechanical-classroom-upgrade.md)。
+- [第三方资源说明](THIRD_PARTY_NOTICES.md)。
 
-菜单将原展厅与对应活动并列。原展厅章节总数仍为04，独立活动刷新与返回使用真实HTML页面。旧01主题/任务、02十三挑战、03新学习区的重复UI和专属逻辑已迁出；02复习与四步归位、04全部保留。
+机械交互参考 [teardown](https://github.com/elvarofficial/teardown) 的状态、几何、舞台和控制分层方法，使用现有 Three.js 自行实现。
 
-练习不限时、不提供正式分数；正式挑战6分钟。同活动、同挑战码、同档位、同内容/评分版本的首次正式成绩才可比较。暂停/后台不暂停正式倒计时，离页、刷新与缓存退出会中断。记录只存在当前浏览器，不上传、不跨设备同步；存储失败仍可玩并明确显示未保存。
+## 使用边界
 
-## 维护
+模型是教学简化机构，非量产车CAD或维修指引；天气为定性样例，不代表设备真实性能。尚未进行儿童试讲和真实教室设备性能验收。
 
-- [当前架构](PROJECT_ARCHITECTURE.md)：入口、依赖、生命周期与数据流。
-- [内容修改地图](docs/engineering/content-editing-guide.md)：三活动与四展厅的文件职责。
-- [实施验收](docs/engineering/science-activities-ui-verification.md)：测试、尺寸截图、审核、迁移清单与限制。
-- [计分与本机记录](docs/engineering/2026-11-08-science-arcade-scoring.md)。
+学习记录仅保存在当前浏览器，可导出备份；没有后端、教师远程控班或跨设备自动同步。旧活动记录保留，不自动转换为新版学习记录。
 
-三活动的领域状态位于 `src/activities/*-lab/state.ts`；公共比赛与存储位于 `src/shared/arcade`，公共UI位于 `src/ui/arcade`。原展厅仍由 `src/app/chapters.ts` 注册并按需加载。纯内容只读适配保留原事实来源，不导入旧控制器。
-
-[内容准备稿](docs/content/2026-11-08-upper-primary/README.md)保留作史料与教学参考，运行以有类型的源码为准。第三方模型许可见 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)。旧翻新/学习实施文档保留历史记录，当前结构以以上文档为准。
+旧方案、宣传材料和历史验收文档作为项目资料保留；其中未实施的设想不代表当前功能，以本页、`src/learning/`及最新验证记录为准。第三方模型、图片及品牌的使用权分别适用其原有许可，本仓库未声明统一的开源许可。
