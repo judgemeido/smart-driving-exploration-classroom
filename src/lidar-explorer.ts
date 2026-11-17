@@ -3,8 +3,7 @@ import { mount, type LidarExplorerController } from './chapters/lidar/controller
 export type { LidarExplorerController } from './chapters/lidar/controller';
 
 export function setupLidarExplorer(host: HTMLElement): LidarExplorerController {
-  const stage = host.querySelector<HTMLElement>('.lidar-stage') ?? host;
-  if (!stage.querySelector('[data-lidar-canvas]')) {
+  if (!host.querySelector('[data-lidar-exhibit-host]')) {
     const dispose = () => {};
     return Object.assign(dispose, { dispose, setActive: () => {} });
   }

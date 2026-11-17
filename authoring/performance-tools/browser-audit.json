@@ -1,0 +1,71 @@
+{
+  "conditions": "Headless Edge, CPU throttled 4x, 2 CPU cores / 2 GB reported memory. GPU is not throttled and is identified in each case; not a physical low-end device benchmark.",
+  "cases": [
+    {
+      "device": "desktop",
+      "car": {
+        "width": 1009,
+        "height": 841,
+        "pixels": 848569,
+        "quality": "low"
+      },
+      "lidar": {
+        "frame": 116,
+        "calls": 90,
+        "triangles": 259814,
+        "pixels": 848792,
+        "shadows": false,
+        "bloom": false,
+        "mode": "assembled",
+        "gpu": "ANGLE (NVIDIA, NVIDIA GeForce RTX 4060 Laptop GPU (0x000028A0) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+        "observedFramesPerSecond": 24.875621890547265,
+        "pausedRenderedFrames": 0,
+        "rayPreparationUpdates": 1,
+        "hiddenRenderedFrames": 0
+      },
+      "modelTransfers": [
+        {
+          "name": "yaojing-s9-optimized-compressed.glb",
+          "bytes": 2434864
+        },
+        {
+          "name": "LD016-engineering-compressed.glb",
+          "bytes": 2711536
+        }
+      ]
+    },
+    {
+      "device": "phone",
+      "car": {
+        "width": 390,
+        "height": 439,
+        "pixels": 171210,
+        "quality": "low"
+      },
+      "lidar": {
+        "frame": 125,
+        "calls": 90,
+        "triangles": 259814,
+        "pixels": 117424,
+        "shadows": false,
+        "bloom": false,
+        "mode": "assembled",
+        "gpu": "ANGLE (NVIDIA, NVIDIA GeForce RTX 4060 Laptop GPU (0x000028A0) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+        "observedFramesPerSecond": 27.268220128904314,
+        "pausedRenderedFrames": 0,
+        "rayPreparationUpdates": 1,
+        "hiddenRenderedFrames": 0
+      },
+      "modelTransfers": [
+        {
+          "name": "yaojing-s9-optimized-compressed.glb",
+          "bytes": 2434864
+        },
+        {
+          "name": "LD016-engineering-compressed.glb",
+          "bytes": 2711536
+        }
+      ]
+    }
+  ]
+}

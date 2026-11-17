@@ -13,6 +13,7 @@
     "format": "prettier --write src tests *.config.ts"
   },
   "dependencies": {
+    "meshoptimizer": "0.25.0",
     "three": "^0.180.0"
   },
   "devDependencies": {

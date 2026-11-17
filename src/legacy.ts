@@ -3,6 +3,7 @@ import { bootstrap } from './app/bootstrap';
 const root = document.querySelector<HTMLElement>('#app')!;
 const app = bootstrap(root);
 const back = document.createElement('a');
+back.dataset.classroomReturn = '';
 back.href = `${import.meta.env.BASE_URL}index.html#lidar/S3`;
 back.textContent = '返回探索课堂';
 back.style.cssText =

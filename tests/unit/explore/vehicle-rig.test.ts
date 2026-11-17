@@ -33,9 +33,11 @@ it('keeps authored door, tailgate, light and explosion transforms', () => {
   rig.prepareExplosionRigs();
   expect(rig.assemblyRoot).toBe(assembly);
   expect(rig.toggleDoors()).toBe(true);
+  expect(rig.animating).toBe(true);
   expect(rig.toggleTailgate()).toBe(true);
   expect(rig.toggleLights()).toBe(true);
   rig.update(2);
+  expect(rig.animating).toBe(false);
   expect(nodes[0].rotation.y).toBeCloseTo(0.1 - 0.72);
   expect(nodes[1].rotation.y).toBeCloseTo(0.1 + 0.72);
   expect(nodes[2].rotation.z).toBeCloseTo(0.2 - 0.95);
@@ -53,6 +55,28 @@ it('keeps authored door, tailgate, light and explosion transforms', () => {
   expect(nodes[3].position.y).toBeCloseTo(0, 3);
   expect(rig.toggleLights()).toBe(false);
   expect(nodes[0].material.emissiveIntensity).toBe(0.06);
+  scope.dispose();
+});
+
+it('freezes rigid leaf details while their door and exploded assembly keep moving', () => {
+  const scene = new THREE.Scene(), roadSurface = new THREE.Group(), scope = createScope();
+  const rig = createVehicleRig({ scene, roadSurface } as ReturnType<typeof createScene>, scope);
+  const root = new THREE.Group(), assembly = new THREE.Group(), door = new THREE.Group();
+  assembly.name = 'EV_SUV'; door.name = 'Door_FL';
+  door.userData.explode_vector_blender_m = [1, 1, 0];
+  const detail = new THREE.Mesh(new THREE.BoxGeometry(.1, .1, .1), new THREE.MeshStandardMaterial());
+  detail.position.set(.1, .2, .3);
+  door.add(detail); assembly.add(door); root.add(assembly);
+  rig.prepareModel(root); rig.prepareExplosionRigs();
+  expect(detail.matrixAutoUpdate).toBe(false);
+  expect(door.matrixAutoUpdate).toBe(true);
+  const before = detail.getWorldPosition(new THREE.Vector3());
+  rig.toggleDoors(); rig.update(2); root.updateMatrixWorld(true);
+  expect(detail.getWorldPosition(new THREE.Vector3()).distanceTo(before)).toBeGreaterThan(.01);
+  rig.setExploded(true); rig.update(2); root.updateMatrixWorld(true);
+  const worldPosition = detail.getWorldPosition(new THREE.Vector3());
+  const reference = detail.position.clone().applyMatrix4(door.matrixWorld);
+  expect(worldPosition.distanceTo(reference)).toBeLessThan(1e-6);
   scope.dispose();
 });
 

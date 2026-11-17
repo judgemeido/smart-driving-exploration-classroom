@@ -1,5 +1,5 @@
 import { archiveAssets, historyExhibits } from './data';
-import { renderArchive, renderTimeline } from './render';
+import { renderArchive, renderMainline, renderTimeline } from './render';
 import { createScope } from '../../shared/lifecycle';
 import type { ChapterController } from '../../app/types';
 
@@ -8,6 +8,8 @@ export function mount(host: HTMLElement): ChapterController {
   const scope=createScope();let active=true,disposed=false;
   const timeline=host.querySelector<HTMLElement>('[data-history-timeline]');
   if(timeline)timeline.innerHTML=renderTimeline(historyExhibits);
+  const mainline=host.querySelector<HTMLElement>('[data-history-mainline]');
+  if(mainline)mainline.innerHTML=renderMainline(historyExhibits);
   const archive=host.querySelector<HTMLElement>('[data-history-archive-list]');
   if(archive)archive.innerHTML=renderArchive(historyExhibits,archiveAssets);
   scope.listen(host,'click',(event:MouseEvent)=>{

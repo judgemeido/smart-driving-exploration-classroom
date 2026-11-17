@@ -1,0 +1,16 @@
+{
+  "skirt_z_mm": [
+    4.4,
+    15.8
+  ],
+  "window_gasket_z_mm": [
+    15.25,
+    16.75
+  ],
+  "axial_overlap_mm": 0.55,
+  "inner_radius_mm": 45.5,
+  "io_board_outer_radius_mm": 43.5,
+  "io_board_radial_clearance_mm": 2,
+  "semantic_owner": "housing_base",
+  "notes": "Lower skirt encloses the open gap; window remains a separate removable assembly."
+}

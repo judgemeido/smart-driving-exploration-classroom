@@ -18,6 +18,9 @@ import {
 } from './data';
 import { createScope, createPausableTimer, createAnimationLoop } from '../../shared/lifecycle';
 import { loadGltf } from '../../shared/gltf';
+import { watchRendererQuality } from '../../shared/renderer-quality';
+import { getQualityProfile } from '../../shared/performance';
+import { createRigidBatches } from '../../shared/rigid-batches';
 import { disposeObject } from '../../shared/three-resources';
 import type { ChapterController } from '../../app/types';
 import { watchWebglContext, reportChapterError } from '../../shared/webgl';
@@ -41,6 +44,10 @@ export function mount(host: HTMLElement): ChapterController {
 }
 function createController(host: HTMLElement, scope: ReturnType<typeof createScope>): ChapterController {
   let exploreActive = false;
+  let frameDirty = true;
+  const invalidate = () => { frameDirty = true; };
+  scope.listen(host, 'click', invalidate, { capture: true });
+  scope.listen(host, 'input', invalidate, { capture: true });
   const rotationTimer = createPausableTimer();
   const canvas = host.querySelector<HTMLCanvasElement>('#model-canvas');
   const viewer = host.querySelector<HTMLElement>('[data-model-viewer]');
@@ -66,6 +73,8 @@ function createController(host: HTMLElement, scope: ReturnType<typeof createScop
   const powerflowProgress = host.querySelector<HTMLElement>('[data-powerflow-progress]');
   const adasOverlay = host.querySelector<HTMLElement>('[data-adas-overlay]');
   let modelRoot: THREE.Object3D | null = null;
+  let rigidBatches: ReturnType<typeof createRigidBatches> | undefined;
+  scope.add(() => rigidBatches?.dispose());
   let activeFocus: FocusKey = 'all';
   const focusMaterials = new Set<THREE.Material>();
   const { materialCache, visibilityCache } = vehicleRig;
@@ -114,6 +123,7 @@ function createController(host: HTMLElement, scope: ReturnType<typeof createScop
   const explosionPointer = new THREE.Vector2();
   const pointerDownPosition = new THREE.Vector2();
   const selectionMaterialCache = new Map<THREE.Mesh, THREE.Material | THREE.Material[]>();
+  const selectionMaterials = new Set<THREE.Material>();
   let selectedPartMesh: THREE.Mesh | null = null;
 
   let missionState = createMissionState();
@@ -205,6 +215,8 @@ function createController(host: HTMLElement, scope: ReturnType<typeof createScop
       mesh.material = material;
     });
     selectionMaterialCache.clear();
+    selectionMaterials.forEach(material => material.dispose());
+    selectionMaterials.clear();
     selectedPartMesh = null;
     const inspector = host.querySelector<HTMLElement>('[data-part-inspector]');
     inspector?.classList.remove('is-visible');
@@ -224,6 +236,7 @@ function createController(host: HTMLElement, scope: ReturnType<typeof createScop
         copy.emissiveIntensity = 0.7;
       }
       copy.transparent = true;
+      selectionMaterials.add(copy);
       return copy;
     });
     selectionMaterialCache.set(mesh, mesh.material);
@@ -277,8 +290,14 @@ function createController(host: HTMLElement, scope: ReturnType<typeof createScop
     explosionPointer.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
     explosionPointer.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
     explosionRaycaster.setFromCamera(explosionPointer, camera);
+    // Raycaster does not ignore invisible ancestors. Skip hidden assemblies
+    // before intersecting triangles, which also makes filtered picking cheaper.
+    const targets: THREE.Mesh[] = [];
+    assemblyRoot.traverseVisible(object => {
+      if (object instanceof THREE.Mesh) targets.push(object);
+    });
     const hit = explosionRaycaster
-      .intersectObject(assemblyRoot, true)
+      .intersectObjects(targets, false)
       .find((item) => item.object instanceof THREE.Mesh);
     if (!hit || !(hit.object instanceof THREE.Mesh)) return;
     if (assemblyOpen) return;
@@ -329,6 +348,7 @@ function createController(host: HTMLElement, scope: ReturnType<typeof createScop
       const { size, scale } = vehicleRig.prepareModel(modelRoot);
       powerflowScene.prepareModel(modelRoot, size);
       vehicleRig.prepareExplosionRigs();
+      rigidBatches = createRigidBatches(modelRoot);
       applyPartFilter();
       controls.target.set(0, size.y * scale * 0.38, 0);
       controls.update();
@@ -400,20 +420,15 @@ function createController(host: HTMLElement, scope: ReturnType<typeof createScop
       restoreMaterials();
     }
     if (modelRoot && focus !== 'all') {
-      modelRoot.traverse((object) => {
-        if (!(object instanceof THREE.Mesh)) return;
-        // The wave field owns its materials and animation state. It is toggled
-        // separately below and should not be dimmed as part of the car focus.
-        if (powerflowScene.sensorWaveGroup?.getObjectById(object.id)) return;
-        if (powerflowScene.group?.getObjectById(object.id)) return;
+      const variants = new Map<THREE.Material, Map<string, THREE.Material>>();
+      // Only original car meshes participate; the wave/energy overlays own their materials.
+      materialCache.forEach((_original, object) => {
         const selected = categoryForObject(object, focus);
         const isVehicleLight = isVehicleLightObject(object);
         const isCabinBackground = focus === 'cabin' && isCabinBackgroundObject(object);
         const source = Array.isArray(object.material) ? object.material : [object.material];
         const cloned = source.map((material) => {
-          const copy = material.clone();
-          copy.transparent = true;
-          copy.opacity =
+          const opacity =
             focus === 'adas' && isVehicleLight
               ? 0
               : focus === 'cabin'
@@ -425,13 +440,24 @@ function createController(host: HTMLElement, scope: ReturnType<typeof createScop
                 : selected
                   ? 1
                   : 0.08;
-          if (!selected || isCabinBackground) copy.depthWrite = false;
-          if (focus === 'adas' && isVehicleLight && 'emissive' in copy) {
+          const depthWrite = selected && !isCabinBackground ? material.depthWrite : false;
+          const suppressEmission = focus === 'adas' && isVehicleLight;
+          const key = `${opacity}:${depthWrite}:${suppressEmission}`;
+          let byState = variants.get(material);
+          if (!byState) variants.set(material, byState = new Map());
+          const existing = byState.get(key);
+          if (existing) return existing;
+          const copy = material.clone();
+          copy.transparent = material.transparent || opacity < 1;
+          copy.opacity = opacity;
+          copy.depthWrite = depthWrite;
+          if (suppressEmission && 'emissive' in copy) {
             const emissiveMaterial = copy as THREE.MeshStandardMaterial;
             emissiveMaterial.emissive.set(0x000000);
             emissiveMaterial.emissiveIntensity = 0;
           }
           focusMaterials.add(copy);
+          byState.set(key, copy);
           return copy;
         });
         object.visible = !(focus === 'adas' && isVehicleLight);
@@ -687,6 +713,7 @@ function createController(host: HTMLElement, scope: ReturnType<typeof createScop
   scope.listen(host.querySelector<HTMLButtonElement>('[data-part-popup-close]'), 'click', clearSelectedPart);
 
   const resize = () => {
+    invalidate();
     const width = viewer.clientWidth || window.innerWidth;
     const height = viewer.clientHeight || window.innerHeight;
     camera.aspect = width / Math.max(height, 1);
@@ -697,6 +724,9 @@ function createController(host: HTMLElement, scope: ReturnType<typeof createScop
   const resizeObserver = new ResizeObserver(resize);
   resizeObserver.observe(viewer);
   resize();
+  scope.add(watchRendererQuality(renderer, resize));
+  controls.addEventListener('change', invalidate);
+  scope.add(() => controls.removeEventListener('change', invalidate));
 
   controls.addEventListener('start', () => {
     controls.autoRotate = false;
@@ -716,7 +746,11 @@ function createController(host: HTMLElement, scope: ReturnType<typeof createScop
   const loop = createAnimationLoop(
     renderer,
     (deltaSeconds) => {
-      controls.update();
+      const cameraChanged = controls.update(deltaSeconds);
+      const animated = controls.autoRotate || vehicleRig.animating || powerflowState.playing ||
+        powerflowScene.sensorWaveGroup?.visible || (assemblyOpen && !!assemblyState.currentGroup);
+      if (!frameDirty && !cameraChanged && !animated) return;
+      frameDirty = false;
       if (assemblyOpen && assemblyState.currentGroup) {
         const previousGroup = assemblyState.currentGroup;
         assemblyState = stepAssemblyReturn(assemblyState, deltaSeconds);
@@ -735,7 +769,9 @@ function createController(host: HTMLElement, scope: ReturnType<typeof createScop
       vehicleRig.update(deltaSeconds);
       powerflowScene.updateRadarWaves(deltaSeconds);
       updatePowerflow(deltaSeconds);
-      renderer.render(scene, camera);
+      const draw = () => renderer.render(scene, camera);
+      if (rigidBatches) rigidBatches.render(draw, getQualityProfile().low);
+      else draw();
     },
     (error) => reportChapterError(host, error),
   );
@@ -747,6 +783,7 @@ function createController(host: HTMLElement, scope: ReturnType<typeof createScop
   scope.add(() => rotationTimer.dispose());
   return {
     setActive(active) {
+      invalidate();
       exploreActive = active;
       rotationTimer.setActive(active);
       if (!active && powerflowState.playing) finishPowerflow('deactivate');

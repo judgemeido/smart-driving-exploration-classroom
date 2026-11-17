@@ -1,0 +1,223 @@
+{
+  "checks": [
+    {
+      "name": "12 functional assemblies and exported rotating nodes",
+      "pass": true,
+      "details": {
+        "parts": 12,
+        "rotors": [
+          [
+            "rotor_head",
+            true
+          ],
+          [
+            "coupling_rotating_rings",
+            true
+          ],
+          [
+            "encoder_rotating_disc",
+            true
+          ],
+          [
+            "Bearing_inner_283",
+            true
+          ],
+          [
+            "Bearing_inner_728",
+            true
+          ]
+        ],
+        "width": 1440,
+        "viewport": 1440
+      }
+    },
+    {
+      "name": "assembled mode and shell visibility",
+      "pass": true,
+      "details": {
+        "mode": "assembled",
+        "exploded": 0,
+        "windowVisible": true,
+        "disabled": false
+      }
+    },
+    {
+      "name": "cutaway mode and shell visibility",
+      "pass": true,
+      "details": {
+        "mode": "cutaway",
+        "exploded": 0,
+        "windowVisible": false,
+        "disabled": false
+      }
+    },
+    {
+      "name": "exploded mode and shell visibility",
+      "pass": true,
+      "details": {
+        "mode": "exploded",
+        "exploded": 1,
+        "windowVisible": true,
+        "disabled": true
+      }
+    },
+    {
+      "name": "Part cards update functional explanation",
+      "pass": true
+    },
+    {
+      "name": "Isolate selection",
+      "pass": true
+    },
+    {
+      "name": "First surface intersection agrees with wall plane",
+      "pass": true,
+      "details": {
+        "name": "实验墙面",
+        "x": 4.924999997019768,
+        "distance": 4.891746860950547,
+        "expected": 4.891746863931233,
+        "path": 9.783526838796924,
+        "ns": 32.63433277830133
+      }
+    },
+    {
+      "name": "Pulse readout uses physical optical path",
+      "pass": true,
+      "details": {
+        "text": "32.63 ns",
+        "ns": 32.63433277830133,
+        "angle": 0,
+        "running": false
+      }
+    },
+    {
+      "name": "Opaque occluder replaces wall return",
+      "pass": true,
+      "details": {
+        "name": "近处遮挡板",
+        "x": 2.340000001341104,
+        "distance": 2.30635309732114
+      }
+    },
+    {
+      "name": "Moving wall changes measured distance",
+      "pass": true,
+      "details": {
+        "x": 7.924999997019768,
+        "distance": 7.892203845033411
+      }
+    },
+    {
+      "name": "Channel elevation updates",
+      "pass": true
+    },
+    {
+      "name": "Continuous scan accumulates actual hit points",
+      "pass": true
+    },
+    {
+      "name": "Clear point cloud resets buffer",
+      "pass": true
+    },
+    {
+      "name": "Canvas ray picking selects a visible part",
+      "pass": true,
+      "details": {
+        "picked": "rotor_head"
+      }
+    },
+    {
+      "name": "Responsive layout 390px",
+      "pass": true,
+      "details": {
+        "width": 390,
+        "scrollWidth": 390,
+        "controls": [
+          44,
+          44,
+          44,
+          44,
+          47,
+          47,
+          47,
+          47,
+          47,
+          47,
+          47,
+          47,
+          47,
+          47,
+          47,
+          47,
+          46,
+          46
+        ]
+      }
+    },
+    {
+      "name": "Responsive layout 720px",
+      "pass": true,
+      "details": {
+        "width": 720,
+        "scrollWidth": 720,
+        "controls": [
+          44,
+          44,
+          44,
+          44,
+          47,
+          47,
+          47,
+          47,
+          47,
+          47,
+          47,
+          47,
+          47,
+          47,
+          47,
+          47,
+          46,
+          46
+        ]
+      }
+    },
+    {
+      "name": "Responsive layout 1024px",
+      "pass": true,
+      "details": {
+        "width": 1024,
+        "scrollWidth": 1024,
+        "controls": [
+          44,
+          44,
+          44,
+          44,
+          46,
+          46,
+          46,
+          46,
+          46,
+          46,
+          46,
+          46,
+          46,
+          46,
+          46,
+          46,
+          44,
+          44
+        ]
+      }
+    },
+    {
+      "name": "No runtime JavaScript exceptions",
+      "pass": true,
+      "details": []
+    }
+  ],
+  "consoleErrors": [],
+  "drawCalls": 168,
+  "finished": "2026-11-12T03:34:33.297Z"
+}

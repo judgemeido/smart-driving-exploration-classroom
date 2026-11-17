@@ -11,6 +11,8 @@ import { batteryTypes, batteryDirection } from './activities/battery-state';
 import { evolutionEras } from './activities/evolution-state';
 import { driveMechanism, sensorRay, chainFlow } from './stage-model';
 import './mechanical-stage.css';
+import { rendererOptions, resizeRenderer } from '../shared/renderer-quality';
+import { getQualityProfile, setQualityPreference, watchQuality, reportRenderCost, reportFrameInterval } from '../shared/performance';
 
 const vehicleParts = [
   ['battery', '电池'],
@@ -116,9 +118,8 @@ export function createStage(
   let controls: OrbitControls | undefined;
   let environment: THREE.WebGLRenderTarget | undefined;
   try {
-    renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'low-power' });
-    renderer.setPixelRatio(Math.min(devicePixelRatio, 1.5));
-    renderer.shadowMap.enabled = true;
+    renderer = new THREE.WebGLRenderer(rendererOptions());
+    renderer.shadowMap.enabled = getQualityProfile().shadows;
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     renderer.outputColorSpace = THREE.SRGBColorSpace;
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
@@ -432,6 +433,7 @@ export function createStage(
   }
   function draw() {
     if (!initialized || disposed || !active || !renderer || lost) return;
+    const started = performance.now();
     const rig = getRig();
     for (const candidate of rigs.values()) candidate.root.visible = candidate === rig;
     rig.update(presentationSnapshot(), elapsed, view);
@@ -442,6 +444,7 @@ export function createStage(
         ? new THREE.Fog('#e9e8e0', 5, 28)
         : null;
     renderer.render(scene, camera);
+    reportRenderCost(performance.now() - started);
   }
   function resetCamera() {
     if (!initialized) return;
@@ -521,7 +524,7 @@ export function createStage(
     const rect = viewport.getBoundingClientRect(),
       width = Math.max(1, rect.width),
       height = Math.max(1, rect.height);
-    renderer.setSize(width, height, false);
+    resizeRenderer(renderer, width, height);
     camera.aspect = width / height;
     camera.updateProjectionMatrix();
     if (!userCamera) resetCamera();
@@ -536,6 +539,11 @@ export function createStage(
   function tick(now: number) {
     frame = 0;
     if (!playing || disposed || !active || lost) return;
+    if (last && now - last < 1000 / getQualityProfile().maxFps - 1) {
+      frame = requestAnimationFrame(tick);
+      return;
+    }
+    const frameInterval = last ? now - last : 0;
     elapsed += last ? Math.min((now - last) / 1000, 0.05) : 0;
     last = now;
     if (elapsed >= 3) {
@@ -543,6 +551,7 @@ export function createStage(
       playing = false;
     }
     draw();
+    if (frameInterval) reportFrameInterval(frameInterval);
     if (playing) frame = requestAnimationFrame(tick);
   }
   function replay() {
@@ -597,6 +606,10 @@ export function createStage(
   );
   const observer = new ResizeObserver(resize);
   observer.observe(viewport);
+  const stopQuality = watchQuality(profile => {
+    if (renderer) renderer.shadowMap.enabled = profile.shadows;
+    resize();
+  });
   document.addEventListener(
     'visibilitychange',
     () => {
@@ -665,16 +678,14 @@ export function createStage(
       else draw();
     },
     setQuality(value: boolean) {
-      if (!renderer) return;
-      renderer.setPixelRatio(Math.min(devicePixelRatio, value ? 1 : 1.5));
-      renderer.shadowMap.enabled = !value;
-      resize();
+      setQualityPreference(value ? 'low' : 'high');
     },
     dispose() {
       if (disposed) return;
       disposed = true;
       stop();
       abort.abort();
+      stopQuality();
       observer.disconnect();
       controls?.dispose();
       for (const rig of rigs.values()) rig.dispose();

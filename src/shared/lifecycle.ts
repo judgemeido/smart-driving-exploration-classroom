@@ -1,3 +1,5 @@
+import { getQualityProfile, reportRenderCost, reportFrameInterval } from './performance';
+
 export function createScope() {
   const aborter = new AbortController();
   const cleanups: (() => void)[] = [];
@@ -93,19 +95,28 @@ export function createAnimationLoop(
   let active = false;
   let disposed = false;
   let previous: number | undefined;
+  let lastFrame: number | undefined;
   return {
     setActive(value: boolean) {
       if (disposed || active === value) return;
       active = value;
       previous = undefined;
+      lastFrame = undefined;
       renderer.setAnimationLoop(
         value
           ? (time: number) => {
+              const interval = 1000 / getQualityProfile().maxFps;
+              if (lastFrame !== undefined && time - lastFrame < interval - 1) return;
+              const frameInterval = lastFrame === undefined ? 0 : time - lastFrame;
+              lastFrame = time;
               const delta =
                 previous === undefined ? 0 : Math.max(0, Math.min((time - previous) / 1000, 0.05));
               previous = time;
               try {
+                const started = performance.now();
                 update(delta);
+                reportRenderCost(performance.now() - started);
+                if (frameInterval) reportFrameInterval(frameInterval);
               } catch (error) {
                 active = false;
                 renderer.setAnimationLoop(null);

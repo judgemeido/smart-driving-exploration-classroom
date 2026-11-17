@@ -4,10 +4,13 @@ import { renderShell } from './shell';
 import { resolveChapter } from './navigation';
 import { createChapterRuntime, type ChapterStatus } from './runtime';
 import { createScope } from '../shared/lifecycle';
+import { bindQualityControl } from '../shared/quality-control';
 
 export function bootstrap(root: HTMLElement, chapters: readonly ChapterDefinition[] = registeredChapters) {
   const scope = createScope();
   const hosts = renderShell(root, chapters);
+  const qualitySelect = root.querySelector<HTMLSelectElement>('[data-quality-select]')!;
+  scope.add(bindQualityControl(qualitySelect));
   const ids = chapters.map((chapter) => chapter.id);
   const menu = root.querySelector<HTMLElement>('[data-chapter-menu]')!;
   const menuButton = root.querySelector<HTMLButtonElement>('[data-menu-button]')!;

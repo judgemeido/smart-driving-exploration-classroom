@@ -136,6 +136,17 @@
 @media (max-width: 1099px), (max-height: 649px) {
   .lesson .model-stage:has(.mechanical-stage) { height: 620px; min-height: 560px; }
 }
+.model-bottom select[data-quality-select] {
+  min-height: 44px;
+  max-width: 140px;
+  padding: 5px 7px;
+  background: #fffefa;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  font-size: 16px;
+  cursor: pointer;
+}
+
 @media (max-width: 600px) {
   .lesson .model-stage:has(.mechanical-stage) { height: 650px; }
   .mechanical-controls { gap: 4px 8px; }

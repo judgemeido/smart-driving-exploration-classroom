@@ -12,3 +12,6 @@
 @import './chapters/lidar/exhibit.css';
 @import './chapters/traffic/styles.css';
 @import './styles/runtime.css';
+
+@import './chapters/lidar/integrated.css';
+@import './styles/performance.css';

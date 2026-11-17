@@ -1,0 +1,7 @@
+/* The museum provides its own persistent chapter navigation. */
+body.museum-embedded > header { display: none; }
+.museum-embedded main { min-height: 100dvh; }
+.museum-embedded.scanning main { height: 100dvh; }
+@media (max-width: 720px) {
+  .museum-embedded.scanning main { height: auto; min-height: 100dvh; }
+}

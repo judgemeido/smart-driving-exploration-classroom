@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="zh-CN">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#07111e"><title>LD-016 · 激光雷达结构研究</title><link rel="stylesheet" href="../src/chapters/lidar/exhibit/preview.css"><link rel="stylesheet" href="../src/chapters/lidar/exhibit/exhibit.css"><link rel="stylesheet" href="../src/chapters/lidar/exhibit/scan-layout.css"><link rel="stylesheet" href="../src/chapters/lidar/exhibit/embedded.css"></head>
+<body class="museum-embedded">
+<header><a class="brand" href="#"><span class="brand-mark">◉</span> 智驾博物馆 <span class="separator">/</span> <span class="muted">结构研究室</span></a><span class="edition">OPTICAL STUDY <b>02</b></span></header>
+<main>
+<section class="exhibit">
+  <div class="heading"><div><div class="eyebrow">LIGHT DETECTION AND RANGING</div><h1>一束光，怎样<em>看见世界。</em></h1><p>转动、发射、接收、计时。拆开看，每一个零件都有任务。</p></div><span class="spec">LD—016<br><small>16线 · 机械旋转教学构型</small></span></div>
+  <nav class="modes" aria-label="模型展示方式"><button data-mode="assembled" class="active">完整外观</button><button data-mode="cutaway">打开外壳</button><button data-mode="exploded">拆解总成</button><button data-mode="scan">看它扫描 <span>↗</span></button></nav>
+  <div class="view-wrap"><div id="model-view" class="viewport" aria-label="可拖动和缩放的雷达模型"></div><div class="view-caption"><span id="view-label">ASSEMBLED / 完整外观</span><span>拖动旋转 · 双指缩放 · 点击零件</span></div><div class="view-badge"><strong>LD—016</strong>OPTICAL SENSOR / 16 CH</div><div id="loading">正在载入 Blender 模型…</div><div id="part-label" hidden></div><div class="scale-label">模型近景 <span>Ø 103 mm</span></div><span class="exhibit-light-note">环形光带为展台灯光</span><div class="canvas-actions"><button id="rotate">暂停转动</button><button id="reset-camera">重置视角</button></div></div>
+  <div class="scan-wrap" hidden><div class="scan-header"><span class="status-dot"></span><strong>环境测距</strong><span>传感器与场景采用米制真实比例</span></div><div id="scan-view" class="viewport" aria-label="激光雷达测距环境"></div><div class="scan-legend"><span class="amber">● 发射</span><span class="cyan">● 回波 / 测量点</span><span>可见光路为慢放示意</span></div></div>
+  <div class="bottom-line"><span><i class="status-dot"></i> <span id="state-label">外壳已打开 · 转动速度已放慢</span></span><span>原创功能教学模型 · 非厂商拆机复刻</span></div>
+</section>
+<aside>
+  <div class="aside-top"><span class="eyebrow">EXPLORE THE ASSEMBLY</span><h2>从零件，读懂原理。</h2><p>点击模型或下方零件卡，查看它负责的工作。</p></div>
+  <div class="part-grid" id="part-grid"></div>
+  <article class="part-info" aria-live="polite"><div class="info-num" id="info-num">01 / 12</div><h3 id="info-title">发射光学阵列</h3><p id="info-text"></p><div class="flow" id="info-flow"></div><div class="info-actions"><button id="focus-part">靠近看</button><button id="isolate-part">单独看零件</button></div></article>
+  <section id="scan-controls" hidden><div class="eyebrow">MEASURE THE FIRST SURFACE</div><h3>移动墙面，看回波变化。</h3><label for="wall-distance">墙面位置 <output id="wall-value">5.0 m</output></label><input id="wall-distance" type="range" min="3" max="9" step="0.5" value="5"><label for="channel">光束仰角 <output id="channel-value">+1°</output></label><input id="channel" type="range" min="0" max="15" step="1" value="8"><div class="scan-buttons"><button id="single-pulse">单次发射</button><button id="clear-cloud">清空点云</button></div><div class="readings"><div><small>首个击中物体</small><b id="hit-name">—</b></div><div><small>等效距离</small><b id="hit-distance">—</b></div><div><small>往返光路时间</small><b id="hit-time">—</b></div></div><p class="measurement-note">时间按发射口 → 表面 → 接收口的总路程计算。画面将传播过程放慢，便于观察。</p></section>
+  <details class="notes"><summary>这件展品如何保证合理？</summary><p>结构采用旋转式激光雷达的通用功能架构，外壳固定，电机带动光学头旋转。16个仰角参考开放驱动标定；电路布局、镜筒、导电环为原创教学设计，不代表某一量产型号的实际拆机结构。</p><p>演示只保留首个表面回波；不模拟光强、材料透射、多回波、电子噪声或激光安全等级。实物激光通常不可见。</p><a href="../assets/lidar/ld016/research.json" target="_blank" rel="noopener">查看结构依据 ↗</a></details>
+</aside>
+</main><script type="module" src="../src/chapters/lidar/exhibit/preview.js"></script>
+</body></html>

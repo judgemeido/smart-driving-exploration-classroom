@@ -9,6 +9,7 @@ export function renderShell(root: HTMLElement, chapters: readonly ChapterDefinit
         <a class="brand" href="#${chapters[0].id}" data-chapter-home aria-label="返回历史页">
           <span class="brand-mark">YS9</span><span class="brand-name">智驾博物馆</span>
         </a>
+        <label class="quality-control"><span>版本</span><select data-quality-select aria-label="配置适配"><option value="auto">自动适配</option><option value="high">标准版</option><option value="low">低配版</option></select></label>
         <div class="chapter-indicator" aria-label="当前章节">
           <span class="chapter-indicator__active" data-chapter-number>${chapters[0].number}</span>
           <span class="chapter-indicator__slash">/</span><span data-chapter-total>${String(chapters.length).padStart(2, '0')}</span>

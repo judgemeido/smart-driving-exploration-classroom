@@ -8,6 +8,7 @@ import { renderTrafficUI } from './presentation';
 import { setText, setTextAll } from '../../shared/dom';
 import { createScope, createPausableTimer, createAnimationLoop } from '../../shared/lifecycle';
 import { loadGltf } from '../../shared/gltf';
+import { resizeRenderer, watchRendererQuality } from '../../shared/renderer-quality';
 import { disposeObject } from '../../shared/three-resources';
 import type { ChapterController } from '../../app/types';
 import { watchWebglContext, reportChapterError } from '../../shared/webgl';
@@ -303,6 +304,7 @@ function createController(host: HTMLElement, scope: ReturnType<typeof createScop
   resizeObserver.observe(host);
   resizeObserver.observe(canvas);
   resize();
+  scope.add(watchRendererQuality(renderer, resize, true));
   const loop = createAnimationLoop(renderer, animate, (error) => reportChapterError(host, error));
   scope.add(() => loop.dispose());
   scope.add(() => resizeObserver.disconnect());
@@ -321,8 +323,7 @@ function createController(host: HTMLElement, scope: ReturnType<typeof createScop
     camera.aspect = width / Math.max(height, 1);
     camera.fov = width < 620 ? 48 : 43;
     camera.updateProjectionMatrix();
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, width < 620 ? 1.25 : 1.6));
-    renderer.setSize(width, height, false);
+    resizeRenderer(renderer, width, height);
   }
 
   function animate(delta: number) {

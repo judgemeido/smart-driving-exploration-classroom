@@ -10,6 +10,7 @@ import { createStructureExperiment } from './activities/structure';
 import { createSensorExperiment } from './activities/sensor';
 import { mountKnowledge } from './knowledge';
 import type { ActivityRecord, Experiment, Observation, SceneSnapshot } from './types';
+import { bindQualityControl } from '../shared/quality-control';
 
 const root = document.querySelector<HTMLElement>('#app')!;
 const initial = loadPortfolio();
@@ -138,7 +139,7 @@ function mountLesson(id: Exclude<Route, 'traffic' | 'report' | 'Q1' | 'Q2'>) {
     )}</nav><div class="learning-cycle"><strong>每一次探索</strong><ol><li>听老师讲解</li><li>点击选择预测</li><li>改变一个条件</li><li>对照证据，选择发现</li></ol></div></aside><article class="lesson-body">
     <div class="lesson-heading"><div><h1 id="lesson-title" tabindex="-1">${activity.title}</h1><p>${activity.question}</p></div><span class="lesson-tag">${section.number} / ${section.short}</span></div>
     <details class="teacher-note"><summary>老师讲解 <span>听完后，开始你的独立验证</span></summary><p>${activity.teacher}</p></details>
-    <div class="work-area"><section class="model-area" aria-label="三维观察台"><div class="model-stage" data-model-stage></div><div class="model-bottom"><span data-model-description>拖动旋转 · 点击部件拆解</span><div><button type="button" data-expand aria-pressed="false">放大观察</button><button type="button" data-camera>重置视角</button><button type="button" data-replay>演示当前状态</button><button type="button" data-quality aria-pressed="false">低配模式</button></div></div></section>
+    <div class="work-area"><section class="model-area" aria-label="三维观察台"><div class="model-stage" data-model-stage></div><div class="model-bottom"><span data-model-description>拖动旋转 · 点击部件拆解</span><div><button type="button" data-expand aria-pressed="false">放大观察</button><button type="button" data-camera>重置视角</button><button type="button" data-replay>演示当前状态</button><select data-quality data-quality-select aria-label="配置适配"><option value="auto">自动适配</option><option value="high">标准版</option><option value="low">低配版</option></select></div></div></section>
     <aside class="lesson-workbench" aria-label="探索工作台"><nav class="lesson-steps" aria-label="探索步骤">${(['prediction', 'experiment', 'evidence', 'reflection'] as const).map((step, i) => `<button type="button" data-step="${step}" aria-controls="step-${step}"${i === 0 ? ' aria-current="step"' : ''}><span aria-hidden="true">${i + 1}</span> ${['预测', '操作', '证据', '发现'][i]}</button>`).join('')}</nav><div class="lesson-panels">
     <section id="step-prediction" class="step-panel" data-panel="prediction" aria-label="选择预测"><div class="prediction-panel"><h2>先选一个预测</h2><p>${activity.predictionPrompt}</p>${choiceMarkup('prediction', '你认为会怎样？', choices.predictions, record.prediction)}<p class="lab-help">先选你的想法，再用实验验证。预测不必正确。</p></div><div class="step-actions"><button type="button" class="primary-button" data-go="experiment">选好了，去操作 →</button></div></section>
     <section id="step-experiment" class="step-panel experiment-panel" data-panel="experiment" aria-label="动手操作" hidden><h2 class="visually-hidden">动手验证</h2><p class="experiment-instruction">${activity.instruction}</p><div data-experiment-controls></div><div class="run-area"><button type="button" class="primary-button" data-run>运行并记录 <svg viewBox="0 0 20 20" aria-hidden="true"><path d="m7 4 7 6-7 6Z" fill="currentColor"/></svg></button><p class="inline-feedback" data-feedback role="status" aria-live="polite"></p></div></section>
@@ -320,19 +321,14 @@ function mountLesson(id: Exclude<Route, 'traffic' | 'report' | 'Q1' | 'Q2'>) {
     if (experiment?.demonstrate) experiment.demonstrate();
     else stage.replay();
   });
-  listen('[data-quality]', 'click', () => {
-    const button = view.querySelector<HTMLButtonElement>('[data-quality]')!;
-    const low = button.getAttribute('aria-pressed') !== 'true';
-    button.setAttribute('aria-pressed', String(low));
-    button.textContent = low ? '已用低配模式' : '低配模式';
-    stage.setQuality(low);
-  });
+  const stopQuality = bindQualityControl(view.querySelector<HTMLSelectElement>('[data-quality-select]')!);
   listen('[data-export]', 'click', download);
   const visibility = () => stage.setActive(document.visibilityState !== 'hidden');
   document.addEventListener('visibilitychange', visibility, { signal: abort.signal });
   visibility();
   setViewActive = (active) => stage.setActive(active);
   disposeView = () => {
+    stopQuality();
     if (document.fullscreenElement === modelArea) void document.exitFullscreen().catch(() => {});
     saveDraft();
     disposed = true;

@@ -1,0 +1,124 @@
+{
+  "checks": [
+    {
+      "name": "New model loads in the museum chapter",
+      "pass": true
+    },
+    {
+      "name": "Exploded assembly",
+      "pass": true
+    },
+    {
+      "name": "PCB selection and isolation",
+      "pass": true
+    },
+    {
+      "name": "Scan inset layout is integrated",
+      "pass": true
+    },
+    {
+      "name": "Measured pulse readout",
+      "pass": true
+    },
+    {
+      "name": "Navigation and mobile layout 390",
+      "pass": true,
+      "details": {
+        "outer": {
+          "width": 390,
+          "scroll": 390,
+          "navBottom": 91,
+          "frameTop": 91,
+          "frameWidth": 390
+        },
+        "inner": {
+          "width": 390,
+          "scroll": 390
+        }
+      }
+    },
+    {
+      "name": "Navigation and mobile layout 720",
+      "pass": true,
+      "details": {
+        "outer": {
+          "width": 720,
+          "scroll": 720,
+          "navBottom": 91,
+          "frameTop": 91,
+          "frameWidth": 720
+        },
+        "inner": {
+          "width": 720,
+          "scroll": 720
+        }
+      }
+    },
+    {
+      "name": "Navigation and mobile layout 1024",
+      "pass": true,
+      "details": {
+        "outer": {
+          "width": 1024,
+          "scroll": 1024,
+          "navBottom": 99,
+          "frameTop": 99,
+          "frameWidth": 1024
+        },
+        "inner": {
+          "width": 1024,
+          "scroll": 1024
+        }
+      }
+    },
+    {
+      "name": "Navigation and mobile layout 1440",
+      "pass": true,
+      "details": {
+        "outer": {
+          "width": 1440,
+          "scroll": 1440,
+          "navBottom": 99,
+          "frameTop": 99,
+          "frameWidth": 1440
+        },
+        "inner": {
+          "width": 1440,
+          "scroll": 1440
+        }
+      }
+    },
+    {
+      "name": "Hidden chapter stops animating",
+      "pass": true
+    },
+    {
+      "name": "History chapter still opens",
+      "pass": true
+    },
+    {
+      "name": "Returning retains scan state and resumes",
+      "pass": true
+    },
+    {
+      "name": "Road safety chapter still opens",
+      "pass": true
+    },
+    {
+      "name": "Classroom remains available",
+      "pass": true
+    },
+    {
+      "name": "Production assets load",
+      "pass": true,
+      "details": []
+    },
+    {
+      "name": "No browser exceptions",
+      "pass": true,
+      "details": []
+    }
+  ],
+  "errors": [],
+  "failedAssets": []
+}

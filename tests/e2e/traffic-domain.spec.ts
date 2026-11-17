@@ -22,8 +22,8 @@ const titles = [
 ];
 
 async function openTraffic(page: Page) {
-  await page.route('**/yaojing-s9.glb', (route) => route.fulfill({ status: 404, body: 'missing' }));
-  await page.goto('/#traffic');
+  await page.route('**/yaojing-s9*.glb', (route) => route.fulfill({ status: 404, body: 'missing' }));
+  await page.goto('/legacy.html#traffic');
   await expect(page.locator('[data-page="traffic"]')).toHaveAttribute('data-status', 'ready');
   await expect(page.locator('[data-traffic-state]')).toContainText('示意车继续');
   // Freeze between driver operations so assertions test the specified remaining duration.

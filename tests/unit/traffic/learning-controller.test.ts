@@ -14,7 +14,8 @@ vi.mock('../../../src/chapters/traffic/scene', () => ({
     scene.add(city, car);
     const camera = new THREE.PerspectiveCamera(43, 1, 0.1, 230);
     camera.position.set(9, 8.5, 17);
-    const renderer = { setAnimationLoop: vi.fn(), setPixelRatio: vi.fn(), setSize: vi.fn(), render: vi.fn() };
+    const renderer = { setAnimationLoop: vi.fn(), setPixelRatio: vi.fn(), getPixelRatio: () => 1,
+      setSize: vi.fn(), render: vi.fn(), domElement: { dataset: {} }, shadowMap: { enabled: true } };
     return { scene, city, car, camera, renderer, fallbackCar: new THREE.Group() };
   }),
 }));

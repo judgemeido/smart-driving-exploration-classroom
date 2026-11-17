@@ -17,9 +17,9 @@ class GalleryHost extends EventTarget {
 }
 const controllers:ChapterController[]=[];
 afterEach(()=>{controllers.splice(0).forEach(controller=>controller.dispose());vi.unstubAllGlobals();});
-it('retains all fourteen rendered exhibits and the original year navigation',()=>{
+it('retains all twenty-three rendered exhibits and the original year navigation',()=>{
   vi.stubGlobal('Element',GalleryElement);const host=new GalleryHost();const controller=mount(host as unknown as HTMLElement);controllers.push(controller);
-  expect(host.archive.innerHTML.match(/data-archive-article/g)).toHaveLength(14);
+  expect(host.archive.innerHTML.match(/data-archive-article/g)).toHaveLength(23);
   host.click();expect(host.article.visits).toBe(1);expect(host.button.selected).toBe(true);
 });
 it('suspends navigation when inactive and removes navigation listeners on disposal',()=>{

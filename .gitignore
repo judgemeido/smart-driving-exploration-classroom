@@ -7,3 +7,10 @@ dist/
 .superpowers/
 test-results/
 playwright-report/
+
+# Local modeling backups and research caches
+__pycache__/
+*.pyc
+*.blend1
+authoring/**/revisions/
+authoring/history-china-update-20261112/huawei-2023.html

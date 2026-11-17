@@ -1,0 +1,336 @@
+{
+  "checks": [
+    {
+      "name": "Inset contained and primary environment enlarged at 1440",
+      "pass": true,
+      "details": {
+        "width": 1440,
+        "scrollWidth": 1440,
+        "nested": true,
+        "main": {
+          "x": 34,
+          "y": 261.59375,
+          "w": 1032,
+          "h": 692.40625
+        },
+        "inset": {
+          "x": 741,
+          "y": 319.59375,
+          "w": 310,
+          "h": 270
+        },
+        "canvasAspect": 1.1492537313432836,
+        "scanAspect": 1.6791481990931785,
+        "buttons": [
+          {
+            "w": 47.03125,
+            "h": 44,
+            "inside": true
+          },
+          {
+            "w": 54,
+            "h": 44,
+            "inside": true
+          },
+          {
+            "w": 54,
+            "h": 44,
+            "inside": true
+          }
+        ]
+      }
+    },
+    {
+      "name": "Canvas resizes and controls fit at 1440",
+      "pass": true,
+      "details": [
+        {
+          "w": 47.03125,
+          "h": 44,
+          "inside": true
+        },
+        {
+          "w": 54,
+          "h": 44,
+          "inside": true
+        },
+        {
+          "w": 54,
+          "h": 44,
+          "inside": true
+        }
+      ]
+    },
+    {
+      "name": "Inset contained and primary environment enlarged at 1024",
+      "pass": true,
+      "details": {
+        "width": 1024,
+        "scrollWidth": 1024,
+        "nested": true,
+        "main": {
+          "x": 20,
+          "y": 261.59375,
+          "w": 694,
+          "h": 673.40625
+        },
+        "inset": {
+          "x": 475,
+          "y": 319.59375,
+          "w": 224,
+          "h": 214
+        },
+        "canvasAspect": 1.0471698113207548,
+        "scanAspect": 1.164186951264392,
+        "buttons": [
+          {
+            "w": 47.03125,
+            "h": 44,
+            "inside": true
+          },
+          {
+            "w": 54,
+            "h": 44,
+            "inside": true
+          },
+          {
+            "w": 54,
+            "h": 44,
+            "inside": true
+          }
+        ]
+      }
+    },
+    {
+      "name": "Canvas resizes and controls fit at 1024",
+      "pass": true,
+      "details": [
+        {
+          "w": 47.03125,
+          "h": 44,
+          "inside": true
+        },
+        {
+          "w": 54,
+          "h": 44,
+          "inside": true
+        },
+        {
+          "w": 54,
+          "h": 44,
+          "inside": true
+        }
+      ]
+    },
+    {
+      "name": "Inset contained and primary environment enlarged at 720",
+      "pass": true,
+      "details": {
+        "width": 720,
+        "scrollWidth": 720,
+        "nested": true,
+        "main": {
+          "x": 15,
+          "y": 235.25,
+          "w": 690,
+          "h": 607.671875
+        },
+        "inset": {
+          "x": 521,
+          "y": 288.25,
+          "w": 174,
+          "h": 186
+        },
+        "canvasAspect": 0.9347826086956522,
+        "scanAspect": 1.3013743165361311,
+        "buttons": [
+          {
+            "w": 44,
+            "h": 44,
+            "inside": true
+          },
+          {
+            "w": 44,
+            "h": 44,
+            "inside": true
+          },
+          {
+            "w": 44,
+            "h": 44,
+            "inside": true
+          }
+        ]
+      }
+    },
+    {
+      "name": "Canvas resizes and controls fit at 720",
+      "pass": true,
+      "details": [
+        {
+          "w": 44,
+          "h": 44,
+          "inside": true
+        },
+        {
+          "w": 44,
+          "h": 44,
+          "inside": true
+        },
+        {
+          "w": 44,
+          "h": 44,
+          "inside": true
+        }
+      ]
+    },
+    {
+      "name": "Inset contained and primary environment enlarged at 390",
+      "pass": true,
+      "details": {
+        "width": 390,
+        "scrollWidth": 390,
+        "nested": true,
+        "main": {
+          "x": 15,
+          "y": 235.25,
+          "w": 360,
+          "h": 607.671875
+        },
+        "inset": {
+          "x": 191,
+          "y": 288.25,
+          "w": 174,
+          "h": 186
+        },
+        "canvasAspect": 0.9347826086956522,
+        "scanAspect": 0.6771686123836265,
+        "buttons": [
+          {
+            "w": 44,
+            "h": 44,
+            "inside": true
+          },
+          {
+            "w": 44,
+            "h": 44,
+            "inside": true
+          },
+          {
+            "w": 44,
+            "h": 44,
+            "inside": true
+          }
+        ]
+      }
+    },
+    {
+      "name": "Canvas resizes and controls fit at 390",
+      "pass": true,
+      "details": [
+        {
+          "w": 44,
+          "h": 44,
+          "inside": true
+        },
+        {
+          "w": 44,
+          "h": 44,
+          "inside": true
+        },
+        {
+          "w": 44,
+          "h": 44,
+          "inside": true
+        }
+      ]
+    },
+    {
+      "name": "Inset model retains orbit interaction",
+      "pass": true,
+      "details": {
+        "before": [
+          0.19500592072602682,
+          0.18697756619684788,
+          0.23605979877361147
+        ],
+        "after": [
+          -0.16600600594642406,
+          0.33193435391383147,
+          0.037959741888322664
+        ]
+      }
+    },
+    {
+      "name": "Pulse still measures and updates the sidebar",
+      "pass": true
+    },
+    {
+      "name": "Wall control still changes the environment",
+      "pass": true
+    },
+    {
+      "name": "Occlusion control remains active",
+      "pass": true
+    },
+    {
+      "name": "Switch cutaway restores the correct canvas placement",
+      "pass": true,
+      "details": {
+        "mode": "cutaway",
+        "parent": "exhibit",
+        "hidden": true,
+        "models": 1
+      }
+    },
+    {
+      "name": "Switch exploded restores the correct canvas placement",
+      "pass": true,
+      "details": {
+        "mode": "exploded",
+        "parent": "exhibit",
+        "hidden": true,
+        "models": 1
+      }
+    },
+    {
+      "name": "Switch assembled restores the correct canvas placement",
+      "pass": true,
+      "details": {
+        "mode": "assembled",
+        "parent": "exhibit",
+        "hidden": true,
+        "models": 1
+      }
+    },
+    {
+      "name": "Switch scan restores the correct canvas placement",
+      "pass": true,
+      "details": {
+        "mode": "scan",
+        "parent": "scan-wrap",
+        "hidden": false,
+        "models": 1
+      }
+    },
+    {
+      "name": "Switch assembled restores the correct canvas placement",
+      "pass": true,
+      "details": {
+        "mode": "assembled",
+        "parent": "exhibit",
+        "hidden": true,
+        "models": 1
+      }
+    },
+    {
+      "name": "Same interactive canvas survives mode changes",
+      "pass": true
+    },
+    {
+      "name": "No runtime errors",
+      "pass": true,
+      "details": []
+    }
+  ],
+  "errors": []
+}

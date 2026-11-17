@@ -1,0 +1,14 @@
+{
+  "rays": 288,
+  "misses": [],
+  "modes": [
+    "cutaway",
+    "exploded",
+    "assembled"
+  ],
+  "mobile": {
+    "width": 390,
+    "content": 390
+  },
+  "errors": []
+}

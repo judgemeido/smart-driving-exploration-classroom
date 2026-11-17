@@ -3,9 +3,9 @@ import { historyExhibits, archiveAssets } from '../../src/chapters/history/data'
 import { disassemblyTasks, assemblyInfo } from '../../src/chapters/explore/data';
 import { scenarios, orderOptions } from '../../src/chapters/traffic/data';
 
-it('keeps the existing 14 exhibits and references available archive assets', () => {
-  expect(historyExhibits).toHaveLength(14);
-  expect(new Set(historyExhibits.map((item) => item.id)).size).toBe(14);
+it('keeps the expanded 23 exhibits and references available archive assets', () => {
+  expect(historyExhibits).toHaveLength(23);
+  expect(new Set(historyExhibits.map((item) => item.id)).size).toBe(23);
   for (const exhibit of historyExhibits)
     if (exhibit.imageTitle) expect(archiveAssets[exhibit.imageTitle]?.image).toBeTruthy();
 });

@@ -41,9 +41,8 @@ test('mechanical whole-car inspection remains usable on classroom screens and pr
     await expect(page.locator('[data-inspect-part="engine"]')).toBeVisible();
     await page.locator('[data-era="modern-ev"]').click();
     await expect(page.locator('[data-inspect-part="engine"]')).toHaveCount(0);
-    if ((await page.locator('[data-quality]').getAttribute('aria-pressed')) !== 'true')
-      await page.locator('[data-quality]').click();
-    await expect(page.locator('[data-quality]')).toHaveAttribute('aria-pressed', 'true');
+    await page.locator('[data-quality-select]').selectOption('low');
+    await expect(page.locator('[data-quality-select]')).toHaveValue('low');
     expect(
       await page.evaluate(
         () =>

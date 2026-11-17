@@ -1,0 +1,518 @@
+{
+  "model": "LD-016 original teaching assembly",
+  "units": "metres",
+  "outer_dimensions_m": [
+    0.113,
+    0.103,
+    0.0847
+  ],
+  "rotating_nodes": [
+    "rotor_head",
+    "coupling_rotating_rings",
+    "encoder_rotating_disc",
+    "Bearing_inner_283",
+    "Bearing_inner_728"
+  ],
+  "channels": [
+    {
+      "id": 0,
+      "elevation_deg": -15,
+      "origin_m": [
+        0.03359111025929451,
+        -0.009000000543892384,
+        0.06689417362213135
+      ],
+      "direction": [
+        0.9659258127212524,
+        0.0,
+        -0.258819043636322
+      ],
+      "receive_origin_m": [
+        0.03359111025929451,
+        0.009000000543892384,
+        0.06689417362213135
+      ]
+    },
+    {
+      "id": 1,
+      "elevation_deg": -13,
+      "origin_m": [
+        0.03369244188070297,
+        -0.009000000543892384,
+        0.06510059535503387
+      ],
+      "direction": [
+        0.9743700623512268,
+        0.0,
+        -0.22495105862617493
+      ],
+      "receive_origin_m": [
+        0.03369244188070297,
+        0.009000000543892384,
+        0.06510059535503387
+      ]
+    },
+    {
+      "id": 2,
+      "elevation_deg": -11,
+      "origin_m": [
+        0.03377952799201012,
+        -0.009000000543892384,
+        0.06331029534339905
+      ],
+      "direction": [
+        0.9816271662712097,
+        0.0,
+        -0.1908089965581894
+      ],
+      "receive_origin_m": [
+        0.03377952799201012,
+        0.009000000543892384,
+        0.06331029534339905
+      ]
+    },
+    {
+      "id": 3,
+      "elevation_deg": -9,
+      "origin_m": [
+        0.03385226055979729,
+        -0.009000000543892384,
+        0.061522793024778366
+      ],
+      "direction": [
+        0.9876883625984192,
+        0.0,
+        -0.15643446147441864
+      ],
+      "receive_origin_m": [
+        0.03385226055979729,
+        0.009000000543892384,
+        0.061522793024778366
+      ]
+    },
+    {
+      "id": 4,
+      "elevation_deg": -7,
+      "origin_m": [
+        0.03391055390238762,
+        -0.009000000543892384,
+        0.05973757058382034
+      ],
+      "direction": [
+        0.9925461411476135,
+        0.0,
+        -0.12186934053897858
+      ],
+      "receive_origin_m": [
+        0.03391055390238762,
+        0.009000000543892384,
+        0.05973757058382034
+      ]
+    },
+    {
+      "id": 5,
+      "elevation_deg": -5,
+      "origin_m": [
+        0.03395434096455574,
+        -0.009000000543892384,
+        0.05795413628220558
+      ],
+      "direction": [
+        0.9961947202682495,
+        0.0,
+        -0.08715574443340302
+      ],
+      "receive_origin_m": [
+        0.03395434096455574,
+        0.009000000543892384,
+        0.05795413628220558
+      ]
+    },
+    {
+      "id": 6,
+      "elevation_deg": -3,
+      "origin_m": [
+        0.03398355469107628,
+        -0.009000000543892384,
+        0.0561719685792923
+      ],
+      "direction": [
+        0.9986295104026794,
+        0.0,
+        -0.0523359552025795
+      ],
+      "receive_origin_m": [
+        0.03398355469107628,
+        0.009000000543892384,
+        0.0561719685792923
+      ]
+    },
+    {
+      "id": 7,
+      "elevation_deg": -1,
+      "origin_m": [
+        0.03399817273020744,
+        -0.009000000543892384,
+        0.054390572011470795
+      ],
+      "direction": [
+        0.9998477101325989,
+        0.0,
+        -0.017452405765652657
+      ],
+      "receive_origin_m": [
+        0.03399817273020744,
+        0.009000000543892384,
+        0.054390572011470795
+      ]
+    },
+    {
+      "id": 8,
+      "elevation_deg": 1,
+      "origin_m": [
+        0.03399817273020744,
+        -0.009000000543892384,
+        0.052609436213970184
+      ],
+      "direction": [
+        0.9998477101325989,
+        0.0,
+        0.017452405765652657
+      ],
+      "receive_origin_m": [
+        0.03399817273020744,
+        0.009000000543892384,
+        0.052609436213970184
+      ]
+    },
+    {
+      "id": 9,
+      "elevation_deg": 3,
+      "origin_m": [
+        0.03398355469107628,
+        -0.009000000543892384,
+        0.05082803592085838
+      ],
+      "direction": [
+        0.9986295104026794,
+        0.0,
+        0.0523359552025795
+      ],
+      "receive_origin_m": [
+        0.03398355469107628,
+        0.009000000543892384,
+        0.05082803592085838
+      ]
+    },
+    {
+      "id": 10,
+      "elevation_deg": 5,
+      "origin_m": [
+        0.03395434096455574,
+        -0.009000000543892384,
+        0.0490458719432354
+      ],
+      "direction": [
+        0.9961947202682495,
+        0.0,
+        0.08715574443340302
+      ],
+      "receive_origin_m": [
+        0.03395434096455574,
+        0.009000000543892384,
+        0.0490458719432354
+      ]
+    },
+    {
+      "id": 11,
+      "elevation_deg": 7,
+      "origin_m": [
+        0.03391055390238762,
+        -0.009000000543892384,
+        0.04726243391633034
+      ],
+      "direction": [
+        0.9925461411476135,
+        0.0,
+        0.12186934053897858
+      ],
+      "receive_origin_m": [
+        0.03391055390238762,
+        0.009000000543892384,
+        0.04726243391633034
+      ]
+    },
+    {
+      "id": 12,
+      "elevation_deg": 9,
+      "origin_m": [
+        0.03385226055979729,
+        -0.009000000543892384,
+        0.045477211475372314
+      ],
+      "direction": [
+        0.9876883625984192,
+        0.0,
+        0.15643446147441864
+      ],
+      "receive_origin_m": [
+        0.03385226055979729,
+        0.009000000543892384,
+        0.045477211475372314
+      ]
+    },
+    {
+      "id": 13,
+      "elevation_deg": 11,
+      "origin_m": [
+        0.03377952799201012,
+        -0.009000000543892384,
+        0.04368970915675163
+      ],
+      "direction": [
+        0.9816271662712097,
+        0.0,
+        0.1908089965581894
+      ],
+      "receive_origin_m": [
+        0.03377952799201012,
+        0.009000000543892384,
+        0.04368970915675163
+      ]
+    },
+    {
+      "id": 14,
+      "elevation_deg": 13,
+      "origin_m": [
+        0.03369244188070297,
+        -0.009000000543892384,
+        0.0418994165956974
+      ],
+      "direction": [
+        0.9743700623512268,
+        0.0,
+        0.22495105862617493
+      ],
+      "receive_origin_m": [
+        0.03369244188070297,
+        0.009000000543892384,
+        0.0418994165956974
+      ]
+    },
+    {
+      "id": 15,
+      "elevation_deg": 15,
+      "origin_m": [
+        0.03359111025929451,
+        -0.009000000543892384,
+        0.04010583087801933
+      ],
+      "direction": [
+        0.9659258127212524,
+        0.0,
+        0.258819043636322
+      ],
+      "receive_origin_m": [
+        0.03359111025929451,
+        0.009000000543892384,
+        0.04010583087801933
+      ]
+    }
+  ],
+  "parts": [
+    {
+      "name": "LD016_ASSEMBLY",
+      "id": "LD016_ASSEMBLY",
+      "description": "",
+      "explode_m": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "parent": null
+    },
+    {
+      "name": "housing_base",
+      "id": "housing",
+      "description": "Flanged base supports all fixed components; not rotating",
+      "explode_m": [
+        0.0,
+        0.0,
+        -0.015000000596046448
+      ],
+      "parent": "LD016_ASSEMBLY"
+    },
+    {
+      "name": "io_board",
+      "id": "io",
+      "description": "Stationary power conditioning and Ethernet interface; harness stays fixed",
+      "explode_m": [
+        -0.1120000034570694,
+        -0.012000000104308128,
+        -0.010000000707805157
+      ],
+      "parent": "LD016_ASSEMBLY"
+    },
+    {
+      "name": "rotary_coupling",
+      "id": "coupling",
+      "description": "Generic gold-ring/brush rotary coupling; illustrative implementation, not a verified VLP16 part",
+      "explode_m": [
+        0.10500000417232513,
+        0.013000000268220901,
+        -0.005000000353902578
+      ],
+      "parent": "LD016_ASSEMBLY"
+    },
+    {
+      "name": "coupling_rotating_rings",
+      "id": "coupling_rotating_rings",
+      "description": "",
+      "explode_m": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "parent": "rotary_coupling"
+    },
+    {
+      "name": "motor_stator",
+      "id": "motor",
+      "description": "Fixed 12-slot stator; magnetic rotor and shaft turn together",
+      "explode_m": [
+        -0.1080000028014183,
+        0.0,
+        0.05100000277161598
+      ],
+      "parent": "LD016_ASSEMBLY"
+    },
+    {
+      "name": "rotor_head",
+      "id": "rotor",
+      "description": "Shared rigid optical carrier; shaft, magnets, optics, timing board and encoder disc rotate in phase",
+      "explode_m": [
+        0.0,
+        0.0,
+        0.10300000756978989
+      ],
+      "parent": "LD016_ASSEMBLY"
+    },
+    {
+      "name": "shaft_bearings",
+      "id": "bearings",
+      "description": "Two spaced radial bearings; outer races fixed, inner races turn with shaft",
+      "explode_m": [
+        0.10400000214576721,
+        -0.012000000104308128,
+        0.0650000050663948
+      ],
+      "parent": "LD016_ASSEMBLY"
+    },
+    {
+      "name": "Bearing_inner_283",
+      "id": "Bearing_inner_283",
+      "description": "",
+      "explode_m": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "parent": "shaft_bearings"
+    },
+    {
+      "name": "Bearing_inner_728",
+      "id": "Bearing_inner_728",
+      "description": "",
+      "explode_m": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "parent": "shaft_bearings"
+    },
+    {
+      "name": "angle_encoder",
+      "id": "encoder",
+      "description": "Reflective code ring beneath the carrier and a stationary optical pickup provide azimuth reference",
+      "explode_m": [
+        -0.10500000417232513,
+        0.003000000026077032,
+        0.12600000202655792
+      ],
+      "parent": "LD016_ASSEMBLY"
+    },
+    {
+      "name": "encoder_rotating_disc",
+      "id": "encoder_rotating_disc",
+      "description": "",
+      "explode_m": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "parent": "angle_encoder"
+    },
+    {
+      "name": "timing_board",
+      "id": "timing",
+      "description": "Rotating pulse driver, receive front-end and time-of-flight processing board",
+      "explode_m": [
+        -0.07900000363588333,
+        0.0,
+        0.0430000014603138
+      ],
+      "parent": "rotor_head"
+    },
+    {
+      "name": "tx_optical_array",
+      "id": "emitter",
+      "description": "16 individual pulse-source/collimator channels, elevations -15 to +15 degrees",
+      "explode_m": [
+        0.07000000029802322,
+        -0.04500000178813934,
+        0.023000001907348633
+      ],
+      "parent": "rotor_head"
+    },
+    {
+      "name": "rx_optical_array",
+      "id": "receiver",
+      "description": "16 corresponding receive lenses, optical filters and detector channels",
+      "explode_m": [
+        0.07000000029802322,
+        0.04500000178813934,
+        0.023000001907348633
+      ],
+      "parent": "rotor_head"
+    },
+    {
+      "name": "ir_window",
+      "id": "window",
+      "description": "Stationary annular infrared window; removable for teaching, does not spin",
+      "explode_m": [
+        0.1900000125169754,
+        0.0,
+        0.11800000816583633
+      ],
+      "parent": "LD016_ASSEMBLY"
+    },
+    {
+      "name": "top_lid",
+      "id": "lid",
+      "description": "Fixed top cover, bearing support and sealing lip",
+      "explode_m": [
+        0.0,
+        0.0,
+        0.2200000137090683
+      ],
+      "parent": "LD016_ASSEMBLY"
+    }
+  ],
+  "limitations": [
+    "Not an OEM VLP-16 teardown",
+    "16 discrete lens assemblies and circuit layout are an original teaching design",
+    "Rotary electrical interface uses an illustrative brush/ring solution",
+    "No laser safety, optical efficiency, electronics or motor electromagnetic simulation",
+    "Actual laser propagation is invisible and nanosecond scale; visible paths are slowed teaching graphics"
+  ]
+}

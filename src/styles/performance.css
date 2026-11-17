@@ -1,0 +1,6 @@
+.quality-control { display:flex;align-items:center;gap:6px;margin-left:auto;color:var(--muted);font-size:11px;white-space:nowrap; }
+.quality-control select { max-width:106px;color:var(--text);background:#17201f;border:1px solid var(--hairline);border-radius:4px;padding:5px 6px;font:inherit;cursor:pointer; }
+.quality-control select:focus-visible { outline:2px solid var(--amber);outline-offset:2px; }
+@media(max-width:760px) { .quality-control { font-size:10px;gap:3px; } .quality-control select { max-width:104px;padding:4px; } }
+html[data-performance-quality="low"] .grain { display:none; }
+html[data-performance-quality="low"] :is(.topbar,.chapter-menu,.part-popup,.part-inspector,.traffic-overlay) { backdrop-filter:none; }

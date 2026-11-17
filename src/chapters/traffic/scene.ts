@@ -1,6 +1,8 @@
 import * as THREE from 'three';
 import { disposeObject, disposeRenderer } from '../../shared/three-resources';
 import type { createScope } from '../../shared/lifecycle';
+import { rendererOptions, resizeRenderer } from '../../shared/renderer-quality';
+import { getQualityProfile } from '../../shared/performance';
 import { makeMaterial, makeBox, makeCylinder, makeFallbackCar, createPedestrian } from './primitives';
 export function createScene(canvas: HTMLCanvasElement, scope: ReturnType<typeof createScope>) {
   const scene = new THREE.Scene();
@@ -21,18 +23,17 @@ export function createScene(canvas: HTMLCanvasElement, scope: ReturnType<typeof 
   camera.position.set(9, 8.5, 17);
   const renderer = new THREE.WebGLRenderer({
     canvas,
-    antialias: true,
+    ...rendererOptions(),
     alpha: false,
-    powerPreference: 'high-performance',
   });
   scope.add(() => disposeRenderer(renderer));
   // The scope disposes in reverse: scene GPU resources must go before renderer maps.
   scope.add(() => disposeObject(scene));
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.6));
+  resizeRenderer(renderer, Math.max(1, canvas.clientWidth), Math.max(1, canvas.clientHeight));
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
   renderer.toneMappingExposure = 1.18;
-  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.enabled = getQualityProfile().shadows;
   renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
   const city = new THREE.Group();

@@ -1,0 +1,28 @@
+{
+  "focusMaterials": [
+    {
+      "focus": "battery",
+      "created": 29,
+      "disposed": 0
+    },
+    {
+      "focus": "cabin",
+      "created": 39,
+      "disposed": 29
+    },
+    {
+      "focus": "adas",
+      "created": 36,
+      "disposed": 39
+    },
+    {
+      "focus": "all",
+      "created": 0,
+      "disposed": 36
+    }
+  ],
+  "tenPickCloseCycles": {
+    "created": 10,
+    "disposed": 10
+  }
+}

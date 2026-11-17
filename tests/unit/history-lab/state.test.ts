@@ -24,7 +24,7 @@ function needs(round = 0) {
 describe('history lab facts and assembly',()=>{
   it('references original facts and preserves five event identities',()=>{
     expect(getHistorySource().learning).toBe(historyLearningContent);
-    expect(getHistorySource().exhibits).toHaveLength(14);
+    expect(getHistorySource().exhibits).toHaveLength(23);
     expect(historyLabContent.events.map(e=>e.id)).toEqual(order);
     expect(historyLabContent.objectives.reduce((sum,o)=>sum+o.weight,0)).toBe(1000);
   });

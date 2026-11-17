@@ -1,0 +1,29 @@
+[
+  {
+    "input": "public/assets/yaojing-s9-optimized.glb",
+    "output": "public/assets/yaojing-s9-optimized-compressed.glb",
+    "originalBytes": 9927908,
+    "compressedBytes": 2434864,
+    "originalPrimitives": 768,
+    "optimizedPrimitives": 768,
+    "interactiveNodeNamesPreserved": true
+  },
+  {
+    "input": "public/assets/yaojing-s9.glb",
+    "output": "public/assets/yaojing-s9-traffic.glb",
+    "originalBytes": 9588984,
+    "compressedBytes": 2319204,
+    "originalPrimitives": 755,
+    "optimizedPrimitives": 30,
+    "interactiveNodeNamesPreserved": false
+  },
+  {
+    "input": "public/assets/lidar/ld016/LD016-engineering.glb",
+    "output": "public/assets/lidar/ld016/LD016-engineering-compressed.glb",
+    "originalBytes": 11803340,
+    "compressedBytes": 2711536,
+    "originalPrimitives": 79,
+    "optimizedPrimitives": 79,
+    "interactiveNodeNamesPreserved": true
+  }
+]

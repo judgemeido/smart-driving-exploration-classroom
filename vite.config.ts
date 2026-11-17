@@ -6,6 +6,7 @@ export default defineConfig({
       input: {
         main: 'index.html',
         legacy: 'legacy.html',
+        lidar: 'lidar/index.html',
         history: 'games/history/index.html',
         structure: 'games/structure/index.html',
         sensor: 'games/sensor/index.html',

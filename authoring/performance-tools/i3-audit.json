@@ -1,0 +1,82 @@
+{
+  "conditions": "4 logical threads / 8 GB reported, CPU throttled 4x. Physical GPU listed per case; this is not an i3-1115G4 hardware benchmark.",
+  "cases": [
+    {
+      "focus": "all",
+      "batched": {
+        "frame": 22,
+        "calls": 249,
+        "triangles": 374025,
+        "points": 0,
+        "lines": 0
+      },
+      "baseline": {
+        "frame": 23,
+        "calls": 797,
+        "triangles": 374025,
+        "points": 0,
+        "lines": 0
+      },
+      "pixels": 599536,
+      "gpu": "ANGLE (NVIDIA, NVIDIA GeForce RTX 4060 Laptop GPU (0x000028A0) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+    },
+    {
+      "focus": "battery",
+      "batched": {
+        "frame": 30,
+        "calls": 1320,
+        "triangles": 694482,
+        "points": 0,
+        "lines": 0
+      },
+      "baseline": {
+        "frame": 31,
+        "calls": 1367,
+        "triangles": 694482,
+        "points": 0,
+        "lines": 0
+      },
+      "pixels": 599536,
+      "gpu": "ANGLE (NVIDIA, NVIDIA GeForce RTX 4060 Laptop GPU (0x000028A0) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+    },
+    {
+      "focus": "cabin",
+      "batched": {
+        "frame": 46,
+        "calls": 1178,
+        "triangles": 664574,
+        "points": 0,
+        "lines": 0
+      },
+      "baseline": {
+        "frame": 47,
+        "calls": 1290,
+        "triangles": 664574,
+        "points": 0,
+        "lines": 0
+      },
+      "pixels": 599536,
+      "gpu": "ANGLE (NVIDIA, NVIDIA GeForce RTX 4060 Laptop GPU (0x000028A0) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+    },
+    {
+      "focus": "adas",
+      "batched": {
+        "frame": 62,
+        "calls": 1146,
+        "triangles": 586164,
+        "points": 0,
+        "lines": 0
+      },
+      "baseline": {
+        "frame": 63,
+        "calls": 1153,
+        "triangles": 586164,
+        "points": 0,
+        "lines": 0
+      },
+      "pixels": 599536,
+      "gpu": "ANGLE (NVIDIA, NVIDIA GeForce RTX 4060 Laptop GPU (0x000028A0) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+    }
+  ],
+  "explodedDrivePicking": true
+}

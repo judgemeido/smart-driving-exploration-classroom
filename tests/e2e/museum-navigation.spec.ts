@@ -19,8 +19,10 @@ test('04 restores all original galleries and their working 3D models', async ({ 
   await expect(page.locator('#model-canvas')).toBeVisible();
   await page.locator('[data-go="lidar"]').click();
   await expect(page).toHaveURL(/legacy\.html#lidar$/);
-  await expect(page.locator('[data-lidar-status]')).toHaveText('装配模型已就绪', { timeout: 30000 });
-  await expect(page.locator('[data-page="lidar"]')).toHaveAttribute('data-asset-status', 'ready');
+  const exhibit = page.frameLocator('.lidar-exhibit-frame');
+  await expect(exhibit.locator('#loading')).toBeHidden({ timeout: 30000 });
+  await expect(exhibit.locator('#model-view canvas')).toBeVisible();
+  await expect(exhibit.locator('#part-grid button')).toHaveCount(12);
   await page.locator('[data-go="traffic"]').click();
   await expect(page.locator('[data-page="traffic"]')).toHaveAttribute('data-status', 'ready');
   await expect(page.locator('[data-page].is-active')).toHaveCount(1);

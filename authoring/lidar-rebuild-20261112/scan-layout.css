@@ -1,0 +1,51 @@
+/* In scanning mode the environment is the primary view; the same model canvas
+   becomes an inset, retaining its controls, picking and shared scan state. */
+body.scanning .scan-wrap {
+  flex: 1 1 auto;
+  height: auto;
+  min-height: 400px;
+  margin-top: 0;
+  isolation: isolate;
+}
+body.scanning .scan-wrap > .viewport { top: 43px; bottom: 34px; }
+body.scanning .scan-header { height: 43px; }
+body.scanning .scan-legend { bottom: 12px; }
+body.scanning .scan-wrap > .view-wrap {
+  position: absolute;
+  top: 57px;
+  right: 14px;
+  bottom: auto;
+  width: clamp(230px, 25vw, 310px);
+  height: clamp(215px, 27dvh, 270px);
+  min-height: 0;
+  margin: 0;
+  z-index: 3;
+  flex: none;
+  border-color: #72c5e66b;
+  box-shadow: 0 12px 36px #0008;
+  background: #07111e;
+}
+body.scanning .view-wrap .view-caption { top: 11px; left: 12px; right: 12px; font-size: 8px; }
+body.scanning .view-wrap > .viewport { inset: 0; }
+body.scanning .view-caption > span:last-child,
+body.scanning .view-badge,
+body.scanning .scale-label,
+body.scanning .exhibit-light-note { display: none; }
+body.scanning .view-wrap .canvas-actions { left: 8px; right: 8px; bottom: 8px; gap: 5px; justify-content: flex-end; }
+body.scanning .view-wrap .canvas-actions button { min-height: 44px; padding: 0 8px; font-size: 9px; }
+body.scanning .view-wrap .canvas-actions #visual-fx { margin-right: auto; }
+body.scanning #part-label { max-width: calc(100% - 20px); overflow: hidden; text-overflow: ellipsis; font-size: 9px; padding: 6px 8px; }
+@media (max-width: 1050px) and (min-width: 721px) {
+  body.scanning .scan-wrap > .view-wrap { width: 224px; height: 214px; }
+  body.scanning .scan-header > span:last-child { font-size: 8px; }
+}
+@media (max-width: 720px) {
+  body.scanning .scan-wrap { flex: none; height: 72dvh; min-height: 520px; }
+  body.scanning .scan-wrap > .view-wrap { top: 52px; right: 9px; width: 174px; height: 186px; min-height: 0; }
+  body.scanning .view-wrap .view-caption { font-size: 7px; left: 9px; top: 10px; letter-spacing: 0; }
+  body.scanning .view-wrap .canvas-actions { left: 5px; right: 5px; bottom: 5px; gap: 3px; }
+  body.scanning .view-wrap .canvas-actions button { padding: 0 4px; font-size: 8px; min-width: 44px; }
+  body.scanning .scan-header > span:last-child { font-size: 7px; }
+  body.scanning #part-label { font-size: 8px; padding: 4px 6px; }
+  body.scanning .scan-legend { font-size: 8px; gap: 9px; }
+}

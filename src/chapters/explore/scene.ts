@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { disposeObject, disposeRenderer } from '../../shared/three-resources';
 import type { createScope } from '../../shared/lifecycle';
+import { rendererOptions, resizeRenderer } from '../../shared/renderer-quality';
 
 export function createScene(canvas: HTMLCanvasElement, scope: ReturnType<typeof createScope>) {
   const scene = new THREE.Scene();
@@ -16,22 +17,19 @@ export function createScene(canvas: HTMLCanvasElement, scope: ReturnType<typeof 
 
   const renderer = new THREE.WebGLRenderer({
     canvas,
-    antialias: true,
+    ...rendererOptions(),
     alpha: false,
-    powerPreference: 'high-performance',
   });
   scope.add(() => disposeRenderer(renderer));
   // The scope disposes in reverse: scene GPU resources must go before renderer maps.
   scope.add(() => disposeObject(scene));
-  const mobileQuery = matchMedia('(max-width: 760px)');
   const updateRendererPixelRatio = () => {
     // Keep the GL buffer proportional to the current viewport. This also
     // handles responsive preview resizing and device rotation without leaving
     // a desktop-sized buffer running behind a phone layout.
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, mobileQuery.matches ? 1.35 : 1.8));
+    resizeRenderer(renderer, Math.max(1, canvas.clientWidth), Math.max(1, canvas.clientHeight));
   };
   updateRendererPixelRatio();
-  scope.listen(mobileQuery, 'change', updateRendererPixelRatio);
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
   renderer.toneMappingExposure = 1.08;

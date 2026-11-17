@@ -65,8 +65,11 @@ export function createVehicleRig(
   };
 
   const updateModelActions = (deltaSeconds: number) => {
+    if (doorsOpen === doorsOpenTarget && tailgateOpen === tailgateOpenTarget) return;
     doorsOpen = THREE.MathUtils.damp(doorsOpen, doorsOpenTarget, 8, deltaSeconds);
     tailgateOpen = THREE.MathUtils.damp(tailgateOpen, tailgateOpenTarget, 8, deltaSeconds);
+    if (Math.abs(doorsOpen - doorsOpenTarget) < 0.0001) doorsOpen = doorsOpenTarget;
+    if (Math.abs(tailgateOpen - tailgateOpenTarget) < 0.0001) tailgateOpen = tailgateOpenTarget;
     doorRigs.forEach(({ node, direction, baseRotation }) => {
       node.rotation.y = baseRotation + direction * doorsOpen * 0.72;
     });
@@ -148,11 +151,22 @@ export function createVehicleRig(
       if (!corrected) break;
     }
     setExplosionProgress(0);
+    // Leaf details stay rigid relative to their assembly. Keep every articulated
+    // owner live so doors, tailgate and teaching/explosion transforms still move.
+    const moving = new Set<THREE.Object3D>(explosionRigs.map(rig => rig.node));
+    doorRigs.forEach(rig => moving.add(rig.node));
+    if (tailgateRig) moving.add(tailgateRig.node);
+    modelRoot.traverse(object => {
+      if (!(object instanceof THREE.Mesh) || moving.has(object)) return;
+      object.updateMatrix();
+      object.matrixAutoUpdate = false;
+    });
   };
 
   const updateExplosion = (deltaSeconds: number) => {
-    if (teachingAssembly) return;
+    if (teachingAssembly || explosionProgress === explosionTarget) return;
     explosionProgress = THREE.MathUtils.damp(explosionProgress, explosionTarget, 5.5, deltaSeconds);
+    if (Math.abs(explosionProgress - explosionTarget) < 0.0001) explosionProgress = explosionTarget;
     setExplosionProgress(explosionProgress);
   };
 
@@ -249,6 +263,10 @@ export function createVehicleRig(
     },
     get explosionTarget() {
       return explosionTarget;
+    },
+    get animating() {
+      return doorsOpen !== doorsOpenTarget || tailgateOpen !== tailgateOpenTarget ||
+        (!teachingAssembly && explosionProgress !== explosionTarget);
     },
     prepareModel,
     prepareExplosionRigs,

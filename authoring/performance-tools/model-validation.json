@@ -1,0 +1,26 @@
+[
+  {
+    "asset": "public/assets/yaojing-s9-optimized-compressed.glb",
+    "checkedNamedNodes": 815,
+    "triangles": 359984,
+    "maxBoundsError": 0.00003143350816892099,
+    "tolerance": 0.0004924585771746933,
+    "extrasPreserved": true
+  },
+  {
+    "asset": "public/assets/yaojing-s9-traffic.glb",
+    "checkedNamedNodes": 0,
+    "triangles": 355964,
+    "maxBoundsError": 0.000030064099096671626,
+    "tolerance": 0.0004924585771746933,
+    "extrasPreserved": false
+  },
+  {
+    "asset": "public/assets/lidar/ld016/LD016-engineering-compressed.glb",
+    "checkedNamedNodes": 96,
+    "triangles": 248110,
+    "maxBoundsError": 6.925748336529536e-7,
+    "tolerance": 0.000010615000187149869,
+    "extrasPreserved": true
+  }
+]

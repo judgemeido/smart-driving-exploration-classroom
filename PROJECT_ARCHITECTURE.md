@@ -1,5 +1,7 @@
 # 智驾博物馆：当前架构
 
+2026-11-12 雷达展厅更新：`legacy.html#lidar` 使用审核后的 LD-016 原创教学模型与交互页面。`src/chapters/lidar/controller.ts` 挂载同源的 `lidar/index.html`，将样式和两套 Three 场景隔离在展品文档中；主站负责固定导航、按需加载、可见性消息及移除。展品代码位于 `src/chapters/lidar/exhibit/`，模型、清单与结构依据位于 `public/assets/lidar/ld016/`。扫描模式以环境为主画面、模型为右上角交互小窗。切走停止绘制，返回保留相机和扫描状态；销毁移除展品文档。旧雷达控制器、视图及集成前配置保存在 `authoring/lidar-rebuild-20261112/revisions/before-main-integration/`；原纯内容与其他课堂活动仍保留。
+
 更新于2026-11-08。四个展厅保留，01–03新增学习改为三个独立HTML活动；[本轮验收记录](docs/engineering/science-activities-ui-verification.md)记录实际验证与边界。
 
 ## 入口与运行
